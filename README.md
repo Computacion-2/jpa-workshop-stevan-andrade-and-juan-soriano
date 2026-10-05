@@ -1,4 +1,3 @@
-# jpa-workshop-stevan-andrade-and-juan-soriano
 # Finanzas Personales - Backend (Taller 2, Computación en Internet II)
 
 Backend de una aplicación de finanzas personales hecho con **Spring Boot + Spring Data JPA (Hibernate) + H2**.
@@ -221,7 +220,78 @@ UserService  ->  RoleService  ->  PermissionService
 | `Port 8081 was already in use` | Otro programa usa el puerto. Cerrarlo o cambiar `server.port` en `application.properties`. |
 | La consola de H2 abre vacía o no encuentra las tablas | El JDBC URL del login no es `jdbc:h2:mem:finanzas`. Corregirlo. |
 | `No tests were executed` con `-Dtest=...` | El nombre de la clase está mal escrito o el comando no se ejecutó en la carpeta del `pom.xml`. |
+| No existe `target/site/jacoco/index.html` | El reporte se genera al correr `mvn clean test` y solo si las pruebas terminan bien. Ejecutar el comando de nuevo en la carpeta del `pom.xml` y revisar que no haya tests fallando. |
 
-## 11. Autores
+## 11. Reporte de cobertura con JaCoCo
+
+JaCoCo mide qué porcentaje del código se ejecuta cuando corren las pruebas y lo muestra en un reporte HTML.
+
+### Cómo generar el reporte
+
+Siempre desde la carpeta del `pom.xml` (`jpa-workshop/jpa-workshop`):
+
+**Paso 1.** Ejecutar las pruebas. Esto también genera el reporte:
+
+```bash
+mvn clean test
+```
+
+**Paso 2.** Abrir el reporte en el navegador.
+
+En Windows (PowerShell o CMD):
+
+```bash
+start .\target\site\jacoco\index.html
+```
+
+En Mac:
+
+```bash
+open target/site/jacoco/index.html
+```
+
+En Linux:
+
+```bash
+xdg-open target/site/jacoco/index.html
+```
+
+Si el comando no abre nada, se puede entrar a la carpeta `target/site/jacoco` y abrir el archivo `index.html` con doble clic.
+
+Notas:
+- `clean` borra la carpeta `target`, así que el reporte se vuelve a crear completo en cada ejecución.
+- El reporte solo se genera si las pruebas terminan bien (`BUILD SUCCESS`).
+- La carpeta `target` no se sube a Git; cada integrante genera su propio reporte.
+
+### Cómo leer el reporte
+
+La primera pantalla muestra una fila por paquete (`com.example.service`, `com.example.model`, `com.example.jpa_workshop`) y una fila `Total`. Las columnas principales son:
+
+| Columna | Qué significa |
+|---|---|
+| Missed Instructions / Cov. | Instrucciones del código que las pruebas no ejecutaron y el porcentaje que sí se ejecutó |
+| Missed Branches / Cov. | Lo mismo para las ramas de los `if` (el camino verdadero y el falso). `n/a` significa que el paquete no tiene `if` |
+| Missed / Lines | Líneas sin ejecutar y total de líneas |
+| Missed / Methods | Métodos sin ejecutar y total de métodos |
+| Missed / Classes | Clases sin ejecutar y total de clases |
+
+Las barras de colores ayudan a leerlo rápido: verde es código cubierto por las pruebas y rojo es código que ninguna prueba ejecutó.
+
+### Resultado actual
+
+| Paquete | Cobertura de instrucciones | Cobertura de ramas |
+|---|---|---|
+| `com.example.service` | 100 % | 100 % |
+| `com.example.model` | 27 % | n/a |
+| `com.example.jpa_workshop` | 15 % | n/a |
+| **Total** | **87 %** | **100 %** (0 de 30 ramas sin cubrir) |
+
+Los servicios (`UserService`, `RoleService`, `PermissionService`) quedan al 100 % porque las pruebas con JUnit y Mockito se enfocan en ellos: consulta, inserción, actualización, eliminación y reglas de negocio.
+Los paquetes `model` y `jpa_workshop` tienen menos cobertura porque no tienen pruebas propias: son las entidades (sus `getters` y `setters` los genera Lombok) y la clase que arranca la aplicación.
+Es un resultado esperado para este taller, ya que el objetivo es probar la lógica de los servicios.
+
+Para ver el detalle de un paquete o una clase, se hace clic en su nombre dentro del reporte. Las líneas en verde se ejecutaron, las amarillas se ejecutaron solo a medias (falta una rama de un `if`) y las rojas nunca se ejecutaron.
+
+## 12. Autores
 
 Stevan Andrade y Juan Soriano - Universidad Icesi, Computación en Internet II.
