@@ -98,7 +98,7 @@ Como H2 trabaja en memoria, la base empieza limpia en cada arranque y no hay que
 
 Con la configuración de `application.properties` la aplicación queda en:
 
-- Puerto: `8081`
+- Puerto: `8082`
 - Ruta base: `/jpa-workshop`
 
 > Si se despliega el `.war` en un **Tomcat externo**, el puerto lo define Tomcat y la ruta base es el nombre del archivo
@@ -109,7 +109,7 @@ Con la configuración de `application.properties` la aplicación queda en:
 Con la aplicación corriendo, abrir en el navegador:
 
 ```
-http://localhost:8081/jpa-workshop/h2-console
+http://localhost:8082/jpa-workshop/h2-console
 ```
 
 En la pantalla de login escribir:
