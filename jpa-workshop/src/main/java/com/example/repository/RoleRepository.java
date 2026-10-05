@@ -1,6 +1,6 @@
-package com.finanzas.repository;
+package com.example.repository;
 
-import com.finanzas.entity.Role;
+import com.example.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

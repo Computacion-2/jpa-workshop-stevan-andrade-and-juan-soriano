@@ -1,6 +1,6 @@
-package com.finanzas.repository;
+package com.example.repository;
 
-import com.finanzas.entity.Account;
+import com.example.model.Account;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
