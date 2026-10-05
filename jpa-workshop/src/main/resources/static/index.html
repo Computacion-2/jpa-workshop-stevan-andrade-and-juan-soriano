@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finanzas Personales - Probador de la API</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #f4f6f8; color: #1f2933; }
+  header { background: #1f4e79; color: #fff; padding: 14px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: .85; }
+  main { display: grid; grid-template-columns: 340px 1fr; gap: 16px; padding: 16px 24px; }
+  section { background: #fff; border-radius: 8px; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  h2 { font-size: 14px; margin: 14px 0 6px; color: #1f4e79; }
+  h2:first-child { margin-top: 0; }
+  button { cursor: pointer; border: 1px solid #1f4e79; background: #fff; color: #1f4e79; border-radius: 5px;
+           padding: 5px 8px; margin: 2px 0; font-size: 13px; text-align: left; width: 100%; }
+  button:hover { background: #e8f0f8; }
+  button.primary { background: #1f4e79; color: #fff; text-align: center; font-weight: 600; }
+  button.primary:hover { background: #163a5a; }
+  .tag { float: right; font-size: 11px; opacity: .7; }
+  label { font-size: 12px; display: block; margin-top: 6px; }
+  input, select, textarea { width: 100%; box-sizing: border-box; padding: 5px; font-family: monospace; font-size: 13px; }
+  #log { height: 78vh; overflow: auto; }
+  .entry { border-left: 5px solid #999; background: #fafafa; margin-bottom: 10px; padding: 6px 10px; }
+  .entry.ok { border-color: #2e8b57; }
+  .entry.bad { border-color: #c0392b; }
+  .entry b { font-size: 13px; }
+  .entry .st { float: right; font-weight: 700; font-size: 13px; }
+  .entry.ok .st { color: #2e8b57; }
+  .entry.bad .st { color: #c0392b; }
+  pre { margin: 6px 0 0; white-space: pre-wrap; word-break: break-word; font-size: 12px; max-height: 260px; overflow: auto; }
+  .small { font-size: 12px; color: #52606d; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Finanzas Personales - Probador de la API</h1>
+  <p>Cada boton envia una peticion a la API y muestra la respuesta. Reiniciar la app antes de probar para que los ids coincidan.</p>
+</header>
+<main>
+  <section>
+    <button class="primary" id="runAll">Ejecutar todo en orden</button>
+    <button id="clear" style="margin-top:6px;text-align:center">Limpiar resultados</button>
+    <div id="steps"></div>
+
+    <h2>Peticion libre</h2>
+    <label>Metodo
+      <select id="m"><option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option></select>
+    </label>
+    <label>Ruta (despues de /api)
+      <input id="p" value="/users">
+    </label>
+    <label>Cuerpo JSON (POST y PUT)
+      <textarea id="b" rows="4"></textarea>
+    </label>
+    <button class="primary" id="send" style="margin-top:8px">Enviar</button>
+  </section>
+
+  <section>
+    <h2>Resultados</h2>
+    <p class="small">Verde: el estado fue el esperado. Rojo: el estado fue distinto al esperado.</p>
+    <div id="log"></div>
+  </section>
+</main>
+
+<script>
+const BASE = 'api';
+
+const steps = [
+  { g: '1. Consultas iniciales', items: [
+    ['Listar permisos', 'GET', '/permissions', null, 200],
+    ['Listar roles', 'GET', '/roles', null, 200],
+    ['Listar usuarios', 'GET', '/users', null, 200],
+    ['Ver usuario 1', 'GET', '/users/1', null, 200] ]},
+  { g: '2. Crear y editar', items: [
+    ['Crear permiso REPORT_READ', 'POST', '/permissions', { name: 'REPORT_READ', description: 'Ver reportes' }, 201],
+    ['Crear rol AUDITOR (permisos 1 y 9)', 'POST', '/roles', { name: 'AUDITOR', permissionIds: [1, 9] }, 201],
+    ['Crear usuario Luis (rol 3)', 'POST', '/users', { name: 'Luis', email: 'luis@finanzas.com', password: 'secreto123', roleId: 3 }, 201],
+    ['Actualizar usuario 3', 'PUT', '/users/3', { name: 'Luis Perez', email: 'luis@finanzas.com', password: 'secreto123', roleId: 3 }, 200],
+    ['Renombrar rol 3', 'PUT', '/roles/3', { name: 'AUDITOR_JR' }, 200],
+    ['Agregar permiso 3 al rol 3', 'POST', '/roles/3/permissions/3', null, 200],
+    ['Quitar permiso 1 del rol 3', 'DELETE', '/roles/3/permissions/1', null, 200],
+    ['Quitar permiso 3 del rol 3', 'DELETE', '/roles/3/permissions/3', null, 200],
+    ['Ver rol 3 (queda con un permiso)', 'GET', '/roles/3', null, 200] ]},
+  { g: '3. Reglas de negocio (deben fallar)', items: [
+    ['Quitar el ultimo permiso de un rol', 'DELETE', '/roles/3/permissions/9', null, 400],
+    ['Crear rol sin permisos', 'POST', '/roles', { name: 'VACIO', permissionIds: [] }, 400],
+    ['Crear usuario sin rol', 'POST', '/users', { name: 'X', email: 'x@x.com', password: '123456' }, 400],
+    ['Borrar rol que tiene usuarios', 'DELETE', '/roles/3', null, 400],
+    ['Borrar permiso asignado a un rol', 'DELETE', '/permissions/9', null, 400] ]},
+  { g: '4. Borrado', items: [
+    ['Borrar usuario 3', 'DELETE', '/users/3', null, 204],
+    ['Borrar rol 3', 'DELETE', '/roles/3', null, 204],
+    ['Borrar permiso 9', 'DELETE', '/permissions/9', null, 204] ]}
+];
+
+const log = document.getElementById('log');
+
+async function call(name, method, path, body, expected) {
+  const opts = { method, headers: {} };
+  if (body !== null && body !== undefined && body !== '') {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = typeof body === 'string' ? body : JSON.stringify(body);
+  }
+  let status = 0, text = '';
+  try {
+    const r = await fetch(BASE + path, opts);
+    status = r.status;
+    text = await r.text();
+    try { text = JSON.stringify(JSON.parse(text), null, 2); } catch (e) { /* no era JSON */ }
+  } catch (e) {
+    text = 'No se pudo conectar con la API: ' + e.message;
+  }
+  const entry = document.createElement('div');
+  const good = expected ? status === expected : status >= 200 && status < 300;
+  entry.className = 'entry ' + (good ? 'ok' : 'bad');
+  const head = document.createElement('div');
+  const title = document.createElement('b');
+  title.textContent = name + '  (' + method + ' /api' + path + ')';
+  const st = document.createElement('span');
+  st.className = 'st';
+  st.textContent = status + (expected ? ' (esperado ' + expected + ')' : '');
+  head.append(st, title);
+  entry.append(head);
+  if (body) {
+    const sent = document.createElement('pre');
+    sent.textContent = 'Enviado: ' + (typeof body === 'string' ? body : JSON.stringify(body));
+    entry.append(sent);
+  }
+  const out = document.createElement('pre');
+  out.textContent = text || '(sin contenido)';
+  entry.append(out);
+  log.prepend(entry);
+  return status;
+}
+
+const stepsDiv = document.getElementById('steps');
+steps.forEach(group => {
+  const h = document.createElement('h2');
+  h.textContent = group.g;
+  stepsDiv.append(h);
+  group.items.forEach(it => {
+    const b = document.createElement('button');
+    b.textContent = it[0];
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = it[1];
+    b.append(tag);
+    b.onclick = () => call(it[0], it[1], it[2], it[3], it[4]);
+    stepsDiv.append(b);
+  });
+});
+
+document.getElementById('runAll').onclick = async () => {
+  for (const group of steps) {
+    for (const it of group.items) {
+      await call(it[0], it[1], it[2], it[3], it[4]);
+      await new Promise(r => setTimeout(r, 400));
+    }
+  }
+};
+document.getElementById('clear').onclick = () => { log.innerHTML = ''; };
+document.getElementById('send').onclick = () => {
+  const m = document.getElementById('m').value;
+  const p = document.getElementById('p').value;
+  const b = document.getElementById('b').value.trim();
+  call('Peticion libre', m, p, b || null, null);
+};
+</script>
+</body>
+</html>
