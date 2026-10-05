@@ -7,6 +7,12 @@ En esta entrega la lógica de negocio está en tres servicios: **Usuarios, Roles
 El proyecto todavía **no tiene controladores ni seguridad (Spring Security)**, así que no hay endpoints HTTP:
 la aplicación se prueba con las pruebas unitarias y con la consola web de H2.
 
+## 🎥 Demostración del proyecto
+
+Haz clic en la imagen para ver el video de demostración:
+
+[![Video de demostración](https://img.youtube.com/vi/3fSzft0fw3o/0.jpg)](https://youtu.be/3fSzft0fw3o)
+
 ## 1. Tecnologías y versiones
 
 | Herramienta | Versión |
