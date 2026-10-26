@@ -50,6 +50,12 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public User changeRole(Long userId, Long roleId) {
+        User user = findById(userId);
+        user.setRole(getRole(roleId));
+        return userRepository.save(user);
+    }
+
     public void delete(Long id) {
         User user = findById(id);
         userRepository.delete(user);
