@@ -2,6 +2,8 @@ package com.example.controller.mvc;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -86,5 +88,39 @@ public class RoleMVCController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/app/roles";
+    }
+
+    @GetMapping("/{id}/permissions")
+    @PreAuthorize("hasAuthority('ROLE_WRITE')")
+    public String permissionsForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Role role = roleService.findById(id);
+            Set<Long> selectedIds = role.getRolePermissions().stream()
+                    .map(rolePermission -> rolePermission.getPermission().getId())
+                    .collect(Collectors.toSet());
+            model.addAttribute("role", role);
+            model.addAttribute("permissionList", permissionService.findAll());
+            model.addAttribute("selectedIds", selectedIds);
+            return "roles/role-permissions";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/app/roles";
+        }
+    }
+
+    @PostMapping("/{id}/permissions")
+    @PreAuthorize("hasAuthority('ROLE_WRITE')")
+    public String setPermissions(@PathVariable Long id,
+                                 @RequestParam(required = false) List<Long> permissionIds,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            roleService.setPermissions(id, permissionIds == null ? null : new HashSet<>(permissionIds));
+            redirectAttributes.addFlashAttribute("success",
+                    "Permisos actualizados. Los usuarios con este rol los verán al volver a iniciar sesión.");
+            return "redirect:/app/roles";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/app/roles/" + id + "/permissions";
+        }
     }
 }
