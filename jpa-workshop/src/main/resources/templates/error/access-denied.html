@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Acceso denegado')}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container page-container">
+
+        <section class="content-card">
+            <div class="empty-state">
+                <div class="empty-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="11" width="14" height="10" rx="2"/>
+                        <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                    </svg>
+                </div>
+
+                <p class="eyebrow mb-2">ERROR 403</p>
+                <h1 class="empty-title">No tienes permiso para ver esto</h1>
+                <p class="empty-description">
+                    Tu rol no incluye el permiso que pide esta sección.
+                    Pídele a un administrador que te lo asigne.
+                </p>
+
+                <div class="form-actions">
+                    <a class="btn-app btn-app-primary" th:href="@{/}">Volver al inicio</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+</body>
+</html>
