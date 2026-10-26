@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <div th:fragment="alerts">
+        <div class="app-alert app-alert-success"
+             role="status"
+             th:if="${success != null}"
+             th:text="${success}">
+            Operación realizada.
+        </div>
+
+        <div class="app-alert app-alert-error"
+             role="alert"
+             th:if="${error != null}"
+             th:text="${error}">
+            Ocurrió un error.
+        </div>
+    </div>
+
+</body>
+</html>
