@@ -8,17 +8,22 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.model.Role;
 import com.example.service.PermissionService;
 import com.example.service.RoleService;
+import com.example.service.UserService;
 
 @Controller
 @RequestMapping("/app/roles")
 public class RoleMVCController {
+
+    private static final String ADMIN_ROLE = "ADMIN";
 
     private final RoleService roleService;
     private final PermissionService permissionService;
@@ -63,5 +68,23 @@ public class RoleMVCController {
         }
         redirectAttributes.addFlashAttribute("name", name);
         return "redirect:/app/roles/new";
+    }
+
+    @PostMapping("/{id}/delete")
+    @PreAuthorize("hasRole('ADMIN') and hasAuthority('ROLE_WRITE')")
+    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Role role = roleService.findById(id);
+            if (ADMIN_ROLE.equals(role.getName()) || UserService.DEFAULT_ROLE.equals(role.getName())) {
+                redirectAttributes.addFlashAttribute("error",
+                        "El rol " + role.getName() + " es del sistema y no se puede eliminar.");
+                return "redirect:/app/roles";
+            }
+            roleService.delete(id);
+            redirectAttributes.addFlashAttribute("success", "Rol " + role.getName() + " eliminado.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/app/roles";
     }
 }
