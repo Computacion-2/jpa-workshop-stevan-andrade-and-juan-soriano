@@ -1,11 +1,18 @@
-# Finanzas Personales - Backend (Taller 2, Computación en Internet II)
+# Finanzas Personales (Talleres 2 y 3, Computación en Internet II)
 
 Backend de una aplicación de finanzas personales hecho con **Spring Boot + Spring Data JPA (Hibernate) + H2**.
 La idea es registrar ingresos y gastos de cada usuario y guardar resúmenes mensuales para comparar periodos.
 
-En esta entrega la lógica de negocio está en tres servicios: **Usuarios, Roles y Permisos**.
-El proyecto todavía **no tiene controladores ni seguridad (Spring Security)**, así que no hay endpoints HTTP:
-la aplicación se prueba con las pruebas unitarias y con la consola web de H2.
+En el Taller 2 la lógica de negocio quedó en tres servicios: **Usuarios, Roles y Permisos**.
+En el **Taller 3** se agregó encima un módulo web con **Spring MVC, Thymeleaf y Spring Security**: inicio de sesión,
+registro y gestión de usuarios, roles y permisos, donde lo que cada usuario ve depende de su rol y sus permisos
+(ver la sección [Taller 3](#taller-3-módulo-web-con-spring-security)).
+
+## 🎥 Demostración del proyecto
+
+Haz clic en la imagen para ver el video de demostración:
+
+[![Video de demostración](https://img.youtube.com/vi/3fSzft0fw3o/0.jpg)](https://youtu.be/3fSzft0fw3o)
 
 ## 1. Tecnologías y versiones
 
@@ -98,7 +105,7 @@ Como H2 trabaja en memoria, la base empieza limpia en cada arranque y no hay que
 
 Con la configuración de `application.properties` la aplicación queda en:
 
-- Puerto: `8081`
+- Puerto: `8082`
 - Ruta base: `/jpa-workshop`
 
 > Si se despliega el `.war` en un **Tomcat externo**, el puerto lo define Tomcat y la ruta base es el nombre del archivo
@@ -106,10 +113,10 @@ Con la configuración de `application.properties` la aplicación queda en:
 
 ## 7. Consola web de H2
 
-Con la aplicación corriendo, abrir en el navegador:
+Con la aplicación corriendo, primero iniciar sesión en la aplicación (ver Taller 3) y después abrir:
 
 ```
-http://localhost:8081/jpa-workshop/h2-console
+http://localhost:8082/jpa-workshop/h2-console
 ```
 
 En la pantalla de login escribir:
@@ -136,6 +143,82 @@ Datos iniciales:
 - Roles: `ADMIN` (todos los permisos) y `USER` (permisos de movimientos).
 - Usuarios: `admin@finanzas.com` (ADMIN) y `ana@finanzas.com` (USER).
 - Movimientos, presupuestos y resúmenes de agosto y septiembre de 2026 para comparar un mes con otro.
+
+## Taller 3: módulo web con Spring Security
+
+Con la aplicación corriendo (sección 6), abrir http://localhost:8082/jpa-workshop. Si no hay sesión, redirige al inicio
+de sesión. Se entra con el **correo** y la contraseña.
+
+### Cuentas de prueba
+
+`data.sql` deja las contraseñas como `PENDING_HASH` y `DatabaseInitializer` las cifra con BCrypt al arrancar.
+La contraseña de prueba es lo que va antes de la `@` seguido de `123`:
+
+| Correo | Contraseña | Rol | Qué puede hacer en el módulo |
+|---|---|---|---|
+| `admin@finanzas.com` | `admin123` | ADMIN | Todo: usuarios, roles y permisos |
+| `ana@finanzas.com` | `ana123` | USER | Solo ver su panel (su rol tiene permisos de movimientos) |
+
+Las cuentas creadas desde "Regístrate" reciben el rol `USER` y su contraseña se guarda cifrada.
+
+### Cómo se autoriza
+
+Al iniciar sesión, Spring Security recibe el rol del usuario como `ROLE_<NOMBRE>` y cada permiso de su rol con su nombre.
+Los controladores se protegen con `@PreAuthorize`:
+
+| Permiso | Permite |
+|---|---|
+| `USER_READ` | Ver la lista de usuarios |
+| `USER_WRITE` | Asociar un rol a un usuario y quitárselo |
+| `ROLE_READ` | Ver los roles, sus permisos y cuántos usuarios tienen |
+| `ROLE_WRITE` | Crear roles y asociarles permisos |
+| `PERMISSION_READ` | Ver los permisos |
+| `PERMISSION_WRITE` | Crear y eliminar permisos |
+
+Eliminar un rol exige además `hasRole('ADMIN')`. Los roles `ADMIN` y `USER` no se pueden eliminar.
+
+Reglas que vienen del Taller 2 y se respetan en las vistas:
+
+- Un usuario **siempre** tiene rol. Por eso "Quitar rol" lo devuelve al rol básico `USER` en vez de dejarlo vacío.
+- Un rol debe tener **al menos un permiso**: se eligen al crearlo y no se puede quitar el último.
+- No se puede eliminar un rol con usuarios ni un permiso asignado a un rol.
+
+Los permisos se cargan al iniciar sesión: si cambia el rol de un usuario o los permisos de su rol, los verá al volver a entrar.
+
+### Rutas
+
+| Ruta | Método | Qué hace | Requiere |
+|---|---|---|---|
+| `/mvc/auth/login` | GET / POST | Iniciar sesión | Público |
+| `/mvc/auth/register` | GET / POST | Registrar usuario | Público |
+| `/logout` | POST | Cerrar sesión | Sesión |
+| `/` | GET | Panel con el rol y los permisos del usuario | Sesión |
+| `/app/users` | GET | Listar usuarios | `USER_READ` |
+| `/app/users/{id}/role` | GET / POST | Asociar un rol a un usuario | `USER_WRITE` |
+| `/app/users/{id}/role/remove` | POST | Quitar el rol (vuelve a `USER`) | `USER_WRITE` |
+| `/app/roles` | GET | Listar roles | `ROLE_READ` |
+| `/app/roles/new` | GET / POST | Crear rol con sus permisos | `ROLE_WRITE` |
+| `/app/roles/{id}/permissions` | GET / POST | Asociar permisos a un rol | `ROLE_WRITE` |
+| `/app/roles/{id}/delete` | POST | Eliminar rol | `ADMIN` + `ROLE_WRITE` |
+| `/app/permissions` | GET / POST | Listar y crear permisos | `PERMISSION_READ` / `PERMISSION_WRITE` |
+| `/app/permissions/{id}/delete` | POST | Eliminar permiso | `PERMISSION_WRITE` |
+
+Todos los formularios usan `th:action`, así que envían el token CSRF, y después de cada POST el controlador redirige.
+La API REST (`/api/...`) y el probador `index.html` siguen funcionando, pero ahora piden haber iniciado sesión.
+
+### Recorrido de prueba
+
+1. Entrar a "Regístrate" y crear la cuenta `Juan Pérez` / `juan@finanzas.com` / `juan123`.
+2. Iniciar sesión con esa cuenta: el panel muestra el rol `USER` y el menú no tiene Usuarios, Roles ni Permisos.
+   Abrir a mano `/jpa-workshop/app/roles` muestra la página 403.
+3. Cerrar sesión y entrar como `admin@finanzas.com` / `admin123`.
+4. **Crear rol:** en Roles, "Crear rol" con el nombre `SOPORTE` y los permisos `USER_READ` y `ROLE_READ`.
+5. **Asociar permisos a un rol:** en la fila de `SOPORTE`, "Asociar permisos", marcar también `PERMISSION_READ` y guardar.
+6. **Asociar rol a un usuario:** en Usuarios, fila de Juan, "Asociar rol", elegir `SOPORTE`.
+7. Entrar como Juan: ahora ve Usuarios, Roles y Permisos, pero sin botones para crear o eliminar.
+8. **Eliminar rol con usuarios:** como admin, eliminar `SOPORTE` no se deja porque Juan lo tiene.
+9. **Quitar rol a un usuario:** en Usuarios, "Quitar rol" en la fila de Juan. Vuelve a `USER`.
+10. **Eliminar rol:** ahora `SOPORTE` sí se puede eliminar.
 
 ## 8. Pruebas (JUnit + Mockito)
 

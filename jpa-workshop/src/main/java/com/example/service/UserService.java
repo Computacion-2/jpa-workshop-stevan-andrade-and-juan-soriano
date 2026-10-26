@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
+    public static final String DEFAULT_ROLE = "USER";
+
     private final UserRepository userRepository;
     private final RoleService roleService;
 
@@ -47,6 +49,23 @@ public class UserService {
         user.setEmail(email);
         user.setPassword(password);
         user.setRole(role);
+        return userRepository.save(user);
+    }
+
+    public User changeRole(Long userId, Long roleId) {
+        User user = findById(userId);
+        user.setRole(getRole(roleId));
+        return userRepository.save(user);
+    }
+
+    // un usuario nunca queda sin rol: al quitarle el suyo vuelve al rol básico
+    public User removeRole(Long userId) {
+        User user = findById(userId);
+        Role defaultRole = roleService.findByName(DEFAULT_ROLE);
+        if (user.getRole().getId().equals(defaultRole.getId())) {
+            throw new IllegalArgumentException("El usuario ya tiene solo el rol básico " + DEFAULT_ROLE);
+        }
+        user.setRole(defaultRole);
         return userRepository.save(user);
     }
 

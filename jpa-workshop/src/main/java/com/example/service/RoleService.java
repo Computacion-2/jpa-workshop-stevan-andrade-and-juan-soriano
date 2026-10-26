@@ -7,7 +7,9 @@ import com.example.repository.RoleRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RoleService {
@@ -28,6 +30,14 @@ public class RoleService {
         Optional<Role> role = roleRepository.findById(id);
         if (role.isEmpty()) {
             throw new IllegalArgumentException("Rol no encontrado: " + id);
+        }
+        return role.get();
+    }
+
+    public Role findByName(String name) {
+        Optional<Role> role = roleRepository.findByName(name);
+        if (role.isEmpty()) {
+            throw new IllegalArgumentException("Rol no encontrado: " + name);
         }
         return role.get();
     }
@@ -87,6 +97,25 @@ public class RoleService {
             throw new IllegalArgumentException("El rol debe conservar al menos un permiso");
         }
         role.getRolePermissions().remove(toRemove);
+        return roleRepository.save(role);
+    }
+
+    @Transactional
+    public Role setPermissions(Long roleId, Set<Long> permissionIds) {
+        if (permissionIds == null || permissionIds.isEmpty()) {
+            throw new IllegalArgumentException("El rol debe tener al menos un permiso");
+        }
+        Role role = findById(roleId);
+        // se quitan los que no se marcaron y se agregan los nuevos, sin tocar los que ya tenía
+        role.getRolePermissions().removeIf(rp -> !permissionIds.contains(rp.getPermission().getId()));
+        Set<Long> currentIds = role.getRolePermissions().stream()
+                .map(rp -> rp.getPermission().getId())
+                .collect(Collectors.toSet());
+        for (Long permissionId : permissionIds) {
+            if (!currentIds.contains(permissionId)) {
+                role.addPermission(permissionService.findById(permissionId));
+            }
+        }
         return roleRepository.save(role);
     }
 }
