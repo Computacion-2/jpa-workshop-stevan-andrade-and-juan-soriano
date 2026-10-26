@@ -39,6 +39,14 @@
                           th:if="${user.role.rolePermissions.isEmpty()}">El rol no tiene permisos</span>
                 </div>
 
+                <form class="mt-4"
+                      th:if="${user.role.name != 'USER'}"
+                      th:action="@{/app/users/{id}/role/remove(id=${user.id})}"
+                      method="post"
+                      onsubmit="return confirm('¿Quitar el rol? El usuario vuelve al rol USER.');">
+                    <button class="btn-app btn-app-danger btn-app-sm" type="submit">Quitar rol</button>
+                    <p class="form-hint">Al quitarlo, el usuario queda con el rol básico USER.</p>
+                </form>
             </div>
 
         </section>

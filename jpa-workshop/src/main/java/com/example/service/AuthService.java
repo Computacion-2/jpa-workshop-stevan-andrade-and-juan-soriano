@@ -10,7 +10,6 @@ import com.example.repository.UserRepository;
 @Service
 public class AuthService {
 
-    public static final String DEFAULT_ROLE = "USER";
     private static final int MIN_PASSWORD_LENGTH = 6;
 
     private final UserService userService;
@@ -41,7 +40,7 @@ public class AuthService {
             throw new IllegalArgumentException("Ya existe una cuenta con el correo " + cleanEmail + ".");
         }
 
-        Role defaultRole = roleService.findByName(DEFAULT_ROLE);
+        Role defaultRole = roleService.findByName(UserService.DEFAULT_ROLE);
         // la contraseña se guarda cifrada, nunca en texto plano
         return userService.create(name.trim(), cleanEmail, passwordEncoder.encode(password), defaultRole.getId());
     }

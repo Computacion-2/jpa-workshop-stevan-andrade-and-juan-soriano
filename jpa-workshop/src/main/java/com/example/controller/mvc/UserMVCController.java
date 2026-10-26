@@ -1,6 +1,7 @@
 package com.example.controller.mvc;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.model.User;
 import com.example.service.RoleService;
 import com.example.service.UserService;
 
@@ -57,5 +59,26 @@ public class UserMVCController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/app/users/" + id + "/role";
+    }
+
+    @PostMapping("/{id}/role/remove")
+    @PreAuthorize("hasAuthority('USER_WRITE')")
+    public String removeRole(@PathVariable Long id,
+                             Authentication authentication,
+                             RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.findById(id);
+            // no dejar que el usuario se quite su propio rol
+            if (user.getEmail().equals(authentication.getName())) {
+                redirectAttributes.addFlashAttribute("error", "No puedes quitarte el rol a ti mismo.");
+                return "redirect:/app/users/" + id + "/role";
+            }
+            userService.removeRole(id);
+            redirectAttributes.addFlashAttribute("success",
+                    "Rol quitado a " + user.getName() + ". Ahora tiene el rol " + UserService.DEFAULT_ROLE + ".");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/app/users";
     }
 }
