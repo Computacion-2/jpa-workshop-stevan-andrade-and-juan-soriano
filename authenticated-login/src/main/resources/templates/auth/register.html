@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Registrarse')}"></head>
+
+<body>
+    <main class="auth-page">
+        <section class="content-card auth-card">
+
+            <span class="brand-icon" aria-hidden="true">A</span>
+            <h1 class="auth-title">Crear cuenta</h1>
+            <p class="section-description mb-4">
+                Las cuentas nuevas reciben el rol USER.
+            </p>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <form th:action="@{/mvc/auth/register}" method="post">
+                <div class="form-field">
+                    <label class="app-label" for="name">Usuario</label>
+                    <input class="app-input" id="name" name="name" type="text"
+                           maxlength="50" autocomplete="username"
+                           th:value="${name}" required autofocus>
+                    <p class="form-hint">Es el nombre con el que vas a iniciar sesión.</p>
+                </div>
+
+                <div class="form-field">
+                    <label class="app-label" for="email">Correo electrónico</label>
+                    <input class="app-input" id="email" name="email" type="email"
+                           maxlength="100" autocomplete="email"
+                           th:value="${email}" required>
+                </div>
+
+                <div class="form-field">
+                    <label class="app-label" for="password">Contraseña</label>
+                    <input class="app-input" id="password" name="password" type="password"
+                           minlength="6" autocomplete="new-password" required>
+                    <p class="form-hint">Mínimo 6 caracteres.</p>
+                </div>
+
+                <div class="form-field">
+                    <label class="app-label" for="confirmPassword">Confirmar contraseña</label>
+                    <input class="app-input" id="confirmPassword" name="confirmPassword" type="password"
+                           minlength="6" autocomplete="new-password" required>
+                </div>
+
+                <button class="btn-app btn-app-primary mt-2" type="submit">Crear cuenta</button>
+            </form>
+
+            <p class="auth-switch">
+                ¿Ya tienes cuenta?
+                <a th:href="@{/mvc/auth/login}">Inicia sesión</a>
+            </p>
+
+        </section>
+    </main>
+</body>
+</html>

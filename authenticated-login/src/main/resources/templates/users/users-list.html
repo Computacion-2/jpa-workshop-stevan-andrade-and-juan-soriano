@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Usuarios')}"></head>
+
+<body>
+
+    <!-- Navegación compartida -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container page-container">
+
+        <!-- Encabezado -->
+        <section class="page-heading mb-4">
+            <div>
+                <p class="eyebrow mb-2">ADMINISTRACIÓN</p>
+                <h1 class="page-title">Usuarios</h1>
+                <p class="page-description mb-0">
+                    Consulta los usuarios registrados y el rol que tiene cada uno.
+                </p>
+            </div>
+
+            <div class="user-summary"
+                 th:if="${userList != null}">
+                <span class="summary-number"
+                      th:text="${userList.size()}">0</span>
+                <span class="summary-label">
+                    usuarios registrados
+                </span>
+            </div>
+        </section>
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <!-- Contenido principal -->
+        <section class="content-card">
+
+            <div class="card-heading">
+                <div>
+                    <h2 class="section-title">Todos los usuarios</h2>
+                    <p class="section-description mb-0">
+                        Listado general de usuarios del sistema.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tabla -->
+            <div class="table-responsive"
+                 th:if="${userList != null and !userList.isEmpty()}">
+
+                <table class="table app-table mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Usuario</th>
+                            <th scope="col">Correo electrónico</th>
+                            <th scope="col">Rol</th>
+                            <th scope="col"
+                                th:if="${authorities.contains('USERS_WRITE')}">
+                                <span class="visually-hidden">Acciones</span>
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr th:each="user : ${userList}">
+                            <td class="id-cell"
+                                th:text="${user.id}">1</td>
+
+                            <td class="name-cell"
+                                th:text="${user.name}">juan</td>
+
+                            <td class="email-cell"
+                                th:text="${user.email}">
+                                juan@example.com
+                            </td>
+
+                            <td>
+                                <span class="badge-app badge-role"
+                                      th:if="${user.role != null}"
+                                      th:text="${user.role.name}">USER</span>
+                                <span class="badge-app badge-muted"
+                                      th:if="${user.role == null}">Sin rol</span>
+                            </td>
+
+                            <td th:if="${authorities.contains('USERS_WRITE')}">
+                                <div class="actions-cell">
+                                    <a class="btn-app btn-app-secondary btn-app-sm"
+                                       th:href="@{/app/users/{id}/role(id=${user.id})}">
+                                        Asociar rol
+                                    </a>
+
+                                    <form class="inline-form"
+                                          th:if="${user.role != null and user.name != currentUsername}"
+                                          th:action="@{/app/users/{id}/role/remove(id=${user.id})}"
+                                          method="post"
+                                          onsubmit="return confirm('¿Quitar el rol a este usuario?');">
+                                        <button class="btn-app btn-app-danger btn-app-sm" type="submit">
+                                            Quitar rol
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <!-- Estado vacío -->
+            <div class="empty-state"
+                 th:if="${userList == null or userList.isEmpty()}">
+
+                <div class="empty-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         width="28"
+                         height="28"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.5"
+                         stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <circle cx="9" cy="8" r="3.5"/>
+                        <path d="M3 20v-1.5a6 6 0 0 1 12 0V20"/>
+                        <path d="M16 5.5a3.5 3.5 0 0 1 0 6.5"/>
+                        <path d="M18 15a5 5 0 0 1 3 4.5V20"/>
+                    </svg>
+                </div>
+
+                <h3 class="empty-title">Aún no hay usuarios</h3>
+
+                <p class="empty-description mb-0">
+                    Cuando existan usuarios registrados,
+                    aparecerán en este listado.
+                </p>
+
+            </div>
+
+        </section>
+
+        <footer class="page-footer">
+            <p class="mb-0">Administración · Gestión de usuarios</p>
+        </footer>
+
+    </main>
+
+    <!-- Bootstrap JS: necesario para el menú desplegable -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+</body>
+</html>

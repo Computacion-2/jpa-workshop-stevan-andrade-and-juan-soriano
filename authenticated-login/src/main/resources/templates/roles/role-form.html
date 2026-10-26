@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Crear rol')}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container page-container">
+
+        <section class="page-heading mb-4">
+            <div>
+                <p class="eyebrow mb-2">
+                    <a class="text-decoration-none" th:href="@{/app/roles}">ROLES</a> / NUEVO
+                </p>
+                <h1 class="page-title">Crear rol</h1>
+                <p class="page-description mb-0">
+                    Después de crearlo le asocias los permisos que necesita.
+                </p>
+            </div>
+        </section>
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <section class="content-card">
+            <form class="form-card" th:action="@{/app/roles/new}" method="post">
+                <div class="form-field">
+                    <label class="app-label" for="name">Nombre del rol</label>
+                    <input class="app-input" id="name" name="name" type="text"
+                           maxlength="50" placeholder="SUPPORT"
+                           th:value="${name}" required autofocus>
+                    <p class="form-hint">
+                        Se guarda en mayúsculas. Spring Security lo expone como ROLE_&lt;NOMBRE&gt;.
+                    </p>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-app btn-app-primary" type="submit">Crear rol</button>
+                    <a class="btn-app btn-app-secondary" th:href="@{/app/roles}">Cancelar</a>
+                </div>
+            </form>
+        </section>
+
+    </main>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+</body>
+</html>

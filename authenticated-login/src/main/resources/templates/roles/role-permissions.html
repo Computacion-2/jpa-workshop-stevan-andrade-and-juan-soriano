@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Permisos del rol')}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container page-container">
+
+        <section class="page-heading mb-4">
+            <div>
+                <p class="eyebrow mb-2">
+                    <a class="text-decoration-none" th:href="@{/app/roles}">ROLES</a> / PERMISOS
+                </p>
+                <h1 class="page-title" th:text="${role.name}">ADMIN</h1>
+                <p class="page-description mb-0">
+                    Marca los permisos que tendrá este rol. Los que desmarques se le quitan.
+                </p>
+            </div>
+        </section>
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <section class="content-card">
+            <form class="form-card"
+                  th:action="@{/app/roles/{id}/permissions(id=${role.id})}"
+                  method="post">
+
+                <div class="permission-grid" th:if="${!permissionList.isEmpty()}">
+                    <label class="permission-option"
+                           th:each="permission : ${permissionList}"
+                           th:for="'permission-' + ${permission.id}">
+                        <input type="checkbox"
+                               name="permissionIds"
+                               th:id="'permission-' + ${permission.id}"
+                               th:value="${permission.id}"
+                               th:checked="${selectedIds.contains(permission.id)}">
+                        <span>
+                            <span class="permission-name" th:text="${permission.name}">USERS_READ</span>
+                            <span class="permission-description"
+                                  th:text="${permission.description}">Consultar usuarios</span>
+                        </span>
+                    </label>
+                </div>
+
+                <p class="empty-description" th:if="${permissionList.isEmpty()}">
+                    No hay permisos creados todavía.
+                </p>
+
+                <div class="form-actions">
+                    <button class="btn-app btn-app-primary" type="submit">Guardar permisos</button>
+                    <a class="btn-app btn-app-secondary" th:href="@{/app/roles}">Cancelar</a>
+                </div>
+            </form>
+        </section>
+
+    </main>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+</body>
+</html>

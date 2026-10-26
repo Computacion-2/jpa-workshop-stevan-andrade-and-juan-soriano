@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Roles')}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container page-container">
+
+        <section class="page-heading mb-4">
+            <div>
+                <p class="eyebrow mb-2">ADMINISTRACIÓN</p>
+                <h1 class="page-title">Roles</h1>
+                <p class="page-description mb-0">
+                    Un rol agrupa permisos; a cada usuario se le asocia un rol.
+                </p>
+            </div>
+
+            <div class="user-summary" th:if="${roleList != null}">
+                <span class="summary-number" th:text="${roleList.size()}">0</span>
+                <span class="summary-label">roles</span>
+            </div>
+        </section>
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <section class="content-card">
+
+            <div class="card-heading card-heading-row">
+                <div>
+                    <h2 class="section-title">Todos los roles</h2>
+                    <p class="section-description mb-0">Con los permisos que incluye cada uno.</p>
+                </div>
+
+                <a class="btn-app btn-app-primary"
+                   th:if="${authorities.contains('ROLES_WRITE')}"
+                   th:href="@{/app/roles/new}">
+                    Crear rol
+                </a>
+            </div>
+
+            <div class="table-responsive"
+                 th:if="${roleList != null and !roleList.isEmpty()}">
+                <table class="table app-table mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Rol</th>
+                            <th scope="col">Permisos</th>
+                            <th scope="col"
+                                th:if="${authorities.contains('ROLES_WRITE')}">
+                                <span class="visually-hidden">Acciones</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="role : ${roleList}">
+                            <td class="id-cell" th:text="${role.id}">1</td>
+                            <td>
+                                <span class="badge-app badge-role" th:text="${role.name}">ADMIN</span>
+                            </td>
+                            <td>
+                                <div class="badge-list">
+                                    <span class="badge-app badge-permission"
+                                          th:each="rolePermission : ${role.rolePermissions}"
+                                          th:text="${rolePermission.permission.name}">USERS_READ</span>
+                                    <span class="badge-app badge-muted"
+                                          th:if="${role.rolePermissions.isEmpty()}">Sin permisos</span>
+                                </div>
+                            </td>
+                            <td th:if="${authorities.contains('ROLES_WRITE')}">
+                                <div class="actions-cell">
+                                    <a class="btn-app btn-app-secondary btn-app-sm"
+                                       th:href="@{/app/roles/{id}/permissions(id=${role.id})}">
+                                        Asociar permisos
+                                    </a>
+
+                                    <form class="inline-form"
+                                          th:if="${authorities.contains('ROLE_ADMIN')}"
+                                          th:action="@{/app/roles/{id}/delete(id=${role.id})}"
+                                          method="post"
+                                          onsubmit="return confirm('¿Eliminar este rol?');">
+                                        <button class="btn-app btn-app-danger btn-app-sm" type="submit">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="empty-state"
+                 th:if="${roleList == null or roleList.isEmpty()}">
+                <h3 class="empty-title">Aún no hay roles</h3>
+                <p class="empty-description mb-0">Crea el primero con el botón de arriba.</p>
+            </div>
+
+        </section>
+
+        <footer class="page-footer">
+            <p class="mb-0">Administración · Roles</p>
+        </footer>
+
+    </main>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+</body>
+</html>

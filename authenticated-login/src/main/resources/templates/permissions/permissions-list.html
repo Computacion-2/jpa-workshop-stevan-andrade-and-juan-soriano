@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Permisos')}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container page-container">
+
+        <section class="page-heading mb-4">
+            <div>
+                <p class="eyebrow mb-2">ADMINISTRACIÓN</p>
+                <h1 class="page-title">Permisos</h1>
+                <p class="page-description mb-0">
+                    Cada permiso es una autoridad que se valida con hasAuthority.
+                </p>
+            </div>
+
+            <div class="user-summary" th:if="${permissionList != null}">
+                <span class="summary-number" th:text="${permissionList.size()}">0</span>
+                <span class="summary-label">permisos</span>
+            </div>
+        </section>
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <section class="content-card mb-4"
+                 th:if="${authorities.contains('PERMISSIONS_WRITE')}">
+            <div class="card-heading">
+                <h2 class="section-title">Nuevo permiso</h2>
+                <p class="section-description mb-0">
+                    El nombre se guarda en mayúsculas, por ejemplo REPORT_READ.
+                </p>
+            </div>
+
+            <form class="form-card" th:action="@{/app/permissions}" method="post">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="app-label" for="name">Nombre</label>
+                        <input class="app-input" id="name" name="name" type="text"
+                               maxlength="50" placeholder="REPORT_READ" required>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="app-label" for="description">Descripción</label>
+                        <input class="app-input" id="description" name="description" type="text"
+                               maxlength="150" placeholder="Qué permite hacer">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-app btn-app-primary" type="submit">Crear permiso</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="content-card">
+            <div class="card-heading">
+                <h2 class="section-title">Todos los permisos</h2>
+            </div>
+
+            <div class="table-responsive"
+                 th:if="${permissionList != null and !permissionList.isEmpty()}">
+                <table class="table app-table mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Permiso</th>
+                            <th scope="col">Descripción</th>
+                            <th scope="col"
+                                th:if="${authorities.contains('PERMISSIONS_WRITE')}">
+                                <span class="visually-hidden">Acciones</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="permission : ${permissionList}">
+                            <td class="id-cell" th:text="${permission.id}">1</td>
+                            <td>
+                                <span class="badge-app badge-permission"
+                                      th:text="${permission.name}">USERS_READ</span>
+                            </td>
+                            <td class="email-cell" th:text="${permission.description}">
+                                Consultar usuarios
+                            </td>
+                            <td th:if="${authorities.contains('PERMISSIONS_WRITE')}">
+                                <div class="actions-cell">
+                                    <form class="inline-form"
+                                          th:action="@{/app/permissions/{id}/delete(id=${permission.id})}"
+                                          method="post"
+                                          onsubmit="return confirm('¿Eliminar este permiso?');">
+                                        <button class="btn-app btn-app-danger btn-app-sm" type="submit">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="empty-state"
+                 th:if="${permissionList == null or permissionList.isEmpty()}">
+                <h3 class="empty-title">Aún no hay permisos</h3>
+                <p class="empty-description mb-0">Crea el primero con el formulario de arriba.</p>
+            </div>
+        </section>
+
+        <footer class="page-footer">
+            <p class="mb-0">Administración · Permisos</p>
+        </footer>
+
+    </main>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+</body>
+</html>

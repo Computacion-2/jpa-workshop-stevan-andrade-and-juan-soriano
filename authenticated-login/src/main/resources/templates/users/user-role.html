@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Rol del usuario')}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="container page-container">
+
+        <section class="page-heading mb-4">
+            <div>
+                <p class="eyebrow mb-2">
+                    <a class="text-decoration-none" th:href="@{/app/users}">USUARIOS</a> / ROL
+                </p>
+                <h1 class="page-title" th:text="${user.name}">juan</h1>
+                <p class="page-description mb-0" th:text="${user.email}">juan@example.com</p>
+            </div>
+        </section>
+
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <section class="content-card mb-4">
+            <div class="card-heading">
+                <h2 class="section-title">Rol actual</h2>
+                <p class="section-description mb-0">
+                    Cada usuario tiene un rol; sus permisos vienen de ese rol.
+                </p>
+            </div>
+
+            <div class="form-card" th:if="${user.role != null}">
+                <span class="badge-app badge-role" th:text="${user.role.name}">USER</span>
+
+                <div class="badge-list mt-3">
+                    <span class="badge-app badge-permission"
+                          th:each="rolePermission : ${user.role.rolePermissions}"
+                          th:text="${rolePermission.permission.name}">USERS_READ</span>
+                    <span class="badge-app badge-muted"
+                          th:if="${user.role.rolePermissions.isEmpty()}">El rol no tiene permisos</span>
+                </div>
+
+                <form class="mt-4"
+                      th:action="@{/app/users/{id}/role/remove(id=${user.id})}"
+                      method="post"
+                      onsubmit="return confirm('¿Quitar el rol a este usuario?');">
+                    <button class="btn-app btn-app-danger btn-app-sm" type="submit">Quitar rol</button>
+                </form>
+            </div>
+
+            <div class="form-card" th:if="${user.role == null}">
+                <span class="badge-app badge-muted">Sin rol asignado</span>
+            </div>
+        </section>
+
+        <section class="content-card">
+            <div class="card-heading">
+                <h2 class="section-title">Asociar rol</h2>
+                <p class="section-description mb-0">
+                    Si ya tiene un rol, se reemplaza por el que elijas.
+                </p>
+            </div>
+
+            <form class="form-card"
+                  th:action="@{/app/users/{id}/role(id=${user.id})}"
+                  method="post">
+                <div class="form-field">
+                    <label class="app-label" for="roleId">Rol</label>
+                    <select class="app-select" id="roleId" name="roleId" required>
+                        <option value="">Selecciona un rol</option>
+                        <option th:each="role : ${roles}"
+                                th:value="${role.id}"
+                                th:text="${role.name}"
+                                th:selected="${user.role != null and role.id == user.role.id}">
+                            ADMIN
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-app btn-app-primary" type="submit">Guardar rol</button>
+                    <a class="btn-app btn-app-secondary" th:href="@{/app/users}">Volver</a>
+                </div>
+            </form>
+        </section>
+
+    </main>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+</body>
+</html>
