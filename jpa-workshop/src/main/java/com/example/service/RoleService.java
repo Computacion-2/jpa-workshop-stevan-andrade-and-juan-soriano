@@ -32,6 +32,14 @@ public class RoleService {
         return role.get();
     }
 
+    public Role findByName(String name) {
+        Optional<Role> role = roleRepository.findByName(name);
+        if (role.isEmpty()) {
+            throw new IllegalArgumentException("Rol no encontrado: " + name);
+        }
+        return role.get();
+    }
+
     public Role create(String name, Set<Long> permissionIds) {
         if (permissionIds == null || permissionIds.isEmpty()) {
             throw new IllegalArgumentException("El rol debe tener al menos un permiso");
