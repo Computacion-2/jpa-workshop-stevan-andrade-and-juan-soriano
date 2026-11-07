@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.controller.rest;
 
 import java.util.List;
 import java.util.Set;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.controller.PermissionController.PermissionResponse;
+import com.example.controller.rest.PermissionController.PermissionResponse;
 import com.example.model.Role;
 import com.example.service.RoleService;
 

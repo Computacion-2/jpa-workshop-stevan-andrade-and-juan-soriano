@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.controller.rest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +26,7 @@ public class UserController {
     }
 
     /** Nunca se devuelve la contraseña. */
+    //Sorih we must remove this fragmente of code, is unuseful
     public record UserResponse(Long id, String name, String email, Long roleId, String roleName,
                                LocalDateTime createdAt, LocalDateTime updatedAt) {
         public static UserResponse from(User u) {
