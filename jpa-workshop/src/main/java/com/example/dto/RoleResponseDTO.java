@@ -13,6 +13,5 @@ public class RoleResponseDTO {
     
     private String id;
     private String name;
-    private List<PermissionResposneDTO> permissions;
 
 }
