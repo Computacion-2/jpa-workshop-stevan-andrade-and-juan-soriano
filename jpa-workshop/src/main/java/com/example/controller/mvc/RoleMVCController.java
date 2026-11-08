@@ -59,7 +59,7 @@ public class RoleMVCController {
         }
         String normalizedName = name.trim().toUpperCase().replace(' ', '_');
         try {
-            RoleRequestDTO roleRequestDTO = new RoleRequestDTO(normalizedName, permissionIds);
+            RoleRequestDTO roleRequestDTO = new RoleRequestDTO(normalizedName, permissionIds == null ? null : new HashSet<>(permissionIds));
             roleService.create(roleRequestDTO);
             redirectAttributes.addFlashAttribute("success", "Rol " + normalizedName + " creado.");
             return "redirect:/app/roles";

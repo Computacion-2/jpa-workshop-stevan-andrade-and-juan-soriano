@@ -87,6 +87,9 @@ public class RoleService implements IRoleService {
     public RoleResponseDTO create(RoleRequestDTO roleRequestDTO) {
         
         if (roleRequestDTO == null) throw new IllegalArgumentException();
+        if (roleRequestDTO.getPermissionIds() == null || roleRequestDTO.getPermissionIds().isEmpty()) {
+            throw new IllegalArgumentException("El rol debe tener al menos un permiso");
+        }
 
         Role role = roleMapper.toEntity(roleRequestDTO);
 

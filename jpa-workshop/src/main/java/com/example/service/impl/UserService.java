@@ -32,7 +32,7 @@ public class UserService implements IUserService{
         List<User> users = userRepository.findAll();
         List<UserResponseDTO> userResponseDTOs = new ArrayList<UserResponseDTO>();
 
-        if (users.isEmpty())
+        if (!users.isEmpty())
             for (User user : users) userResponseDTOs.add(userMapper.toResponse(user)); 
 
         return userResponseDTOs;
