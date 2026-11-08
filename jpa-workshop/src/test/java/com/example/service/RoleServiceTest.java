@@ -4,20 +4,28 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.example.dto.RoleRequestDTO;
+import com.example.dto.RoleResponseDTO;
+import com.example.mapper.IRoleMapper;
 import com.example.model.Permission;
 import com.example.model.Role;
 import com.example.model.User;
 import com.example.repository.RoleRepository;
+import com.example.service.interf.IPermissionService;
+import com.example.service.impl.RoleService;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.mapstruct.factory.Mappers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,7 +35,10 @@ public class RoleServiceTest {
     private RoleRepository roleRepository;
 
     @Mock
-    private PermissionService permissionService;
+    private IPermissionService permissionService;
+
+    @Spy
+    private IRoleMapper roleMapper = Mappers.getMapper(IRoleMapper.class);
 
     @InjectMocks
     private RoleService roleService;
@@ -61,7 +72,7 @@ public class RoleServiceTest {
         roles.add(role);
         when(roleRepository.findAll()).thenReturn(roles);
 
-        List<Role> result = roleService.findAll();
+        List<RoleResponseDTO> result = roleService.findAll();
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -73,7 +84,7 @@ public class RoleServiceTest {
     public void testFindById() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
 
-        Role result = roleService.findById(1L);
+        RoleResponseDTO result = roleService.findById(1L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -94,21 +105,24 @@ public class RoleServiceTest {
     public void testCreate() {
         Set<Long> permissionIds = new HashSet<>();
         permissionIds.add(1L);
-        when(permissionService.findById(1L)).thenReturn(permission1);
+        when(permissionService.findByIdDB(1L)).thenReturn(permission1);
         when(roleRepository.save(any(Role.class))).thenReturn(role);
 
-        Role result = roleService.create("ADMIN", permissionIds);
+        RoleRequestDTO roleRequestDTO = new RoleRequestDTO("ADMIN", permissionIds);
+
+        RoleResponseDTO result = roleService.create(roleRequestDTO);
 
         assertNotNull(result);
         assertNotNull(result.getId());
         assertEquals("ADMIN", result.getName());
-        verify(permissionService, times(1)).findById(1L);
+        verify(permissionService, times(1)).findByIdDB(1L);
         verify(roleRepository, times(1)).save(any(Role.class));
     }
 
     @Test
     public void testCreateWithNullPermissions() {
-        assertThrows(IllegalArgumentException.class, () -> roleService.create("ADMIN", null));
+        RoleRequestDTO roleRequestDTO = new RoleRequestDTO("ADMIN", null);
+        assertThrows(IllegalArgumentException.class, () -> roleService.create(roleRequestDTO));
         verify(roleRepository, never()).save(any(Role.class));
     }
 
@@ -116,7 +130,8 @@ public class RoleServiceTest {
     public void testCreateWithEmptyPermissions() {
         Set<Long> permissionIds = new HashSet<>();
 
-        assertThrows(IllegalArgumentException.class, () -> roleService.create("ADMIN", permissionIds));
+        RoleRequestDTO roleRequestDTO = new RoleRequestDTO("ADMIN", permissionIds);
+        assertThrows(IllegalArgumentException.class, () -> roleService.create(roleRequestDTO));
         verify(roleRepository, never()).save(any(Role.class));
     }
 
@@ -125,30 +140,32 @@ public class RoleServiceTest {
     @Test
     public void testUpdate() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
-        when(roleRepository.save(any(Role.class))).thenReturn(role);
+        when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Role result = roleService.update(1L, "SUPERADMIN");
+        RoleRequestDTO roleRequestDTO = new RoleRequestDTO("SUPERADMIN", null);
+        RoleResponseDTO result = roleService.update(1L, roleRequestDTO);
 
         assertEquals("SUPERADMIN", result.getName());
-        verify(roleRepository, times(1)).save(role);
+        verify(roleRepository, times(1)).save(any(Role.class));
     }
 
     @Test
     public void testAddPermission() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
-        when(permissionService.findById(2L)).thenReturn(permission2);
+        when(permissionService.findByIdDB(2L)).thenReturn(permission2);
         when(roleRepository.save(any(Role.class))).thenReturn(role);
 
-        Role result = roleService.addPermission(1L, 2L);
+        roleService.addPermission(1L, 2L);
+        Role roleFound = roleService.findByIdDB(1L);
 
-        assertEquals(2, result.getRolePermissions().size());
+        assertEquals(2, roleFound.getRolePermissions().size());
         verify(roleRepository, times(1)).save(role);
     }
 
     @Test
     public void testAddPermissionAlreadyAssigned() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
-        when(permissionService.findById(1L)).thenReturn(permission1);
+        when(permissionService.findByIdDB(1L)).thenReturn(permission1);
 
         assertThrows(IllegalArgumentException.class, () -> roleService.addPermission(1L, 1L));
         verify(roleRepository, never()).save(any(Role.class));
@@ -160,9 +177,10 @@ public class RoleServiceTest {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(roleRepository.save(any(Role.class))).thenReturn(role);
 
-        Role result = roleService.removePermission(1L, 1L);
+        roleService.removePermission(1L, 1L);
+        Role roleFound = roleService.findByIdDB(1L);
 
-        assertEquals(1, result.getRolePermissions().size());
+        assertEquals(1, roleFound.getRolePermissions().size());
         verify(roleRepository, times(1)).save(role);
     }
 

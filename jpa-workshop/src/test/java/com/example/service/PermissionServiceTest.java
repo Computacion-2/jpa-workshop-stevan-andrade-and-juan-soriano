@@ -4,17 +4,24 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.example.dto.PermissionRequestDTO;
+import com.example.dto.PermissionResponseDTO;
+import com.example.mapper.IPermissionMapper;
 import com.example.model.Permission;
 import com.example.model.RolePermission;
 import com.example.repository.PermissionRepository;
+import com.example.service.impl.PermissionService;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.mapstruct.factory.Mappers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,6 +29,9 @@ public class PermissionServiceTest {
 
     @Mock
     private PermissionRepository permissionRepository;
+
+    @Spy
+    private IPermissionMapper permissionMapper = Mappers.getMapper(IPermissionMapper.class);
 
     @InjectMocks
     private PermissionService permissionService;
@@ -44,7 +54,7 @@ public class PermissionServiceTest {
         permissions.add(permission);
         when(permissionRepository.findAll()).thenReturn(permissions);
 
-        List<Permission> result = permissionService.findAll();
+        List<PermissionResponseDTO> result = permissionService.findAll();
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -56,7 +66,7 @@ public class PermissionServiceTest {
     public void testFindById() {
         when(permissionRepository.findById(1L)).thenReturn(Optional.of(permission));
 
-        Permission result = permissionService.findById(1L);
+        PermissionResponseDTO result = permissionService.findById(1L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -77,7 +87,8 @@ public class PermissionServiceTest {
     public void testCreate() {
         when(permissionRepository.save(any(Permission.class))).thenReturn(permission);
 
-        Permission result = permissionService.create("USER_READ", "Consultar usuarios");
+        PermissionRequestDTO permissionRequestDTO = new PermissionRequestDTO("USER_READ", "Consultar usuarios");
+        PermissionResponseDTO result = permissionService.create(permissionRequestDTO);
 
         assertNotNull(result);
         assertNotNull(result.getId());
@@ -92,7 +103,9 @@ public class PermissionServiceTest {
         when(permissionRepository.findById(1L)).thenReturn(Optional.of(permission));
         when(permissionRepository.save(any(Permission.class))).thenReturn(permission);
 
-        Permission result = permissionService.update(1L, "USER_WRITE", "Editar usuarios");
+        PermissionRequestDTO permissionRequestDTO = new PermissionRequestDTO("USER_WRITE", "Editar usuarios");
+
+        PermissionResponseDTO result = permissionService.update(1L, permissionRequestDTO);
 
         assertEquals("USER_WRITE", result.getName());
         assertEquals("Editar usuarios", result.getDescription());

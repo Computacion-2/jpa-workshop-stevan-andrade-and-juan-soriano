@@ -16,24 +16,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.dto.RoleRequestDTO;
+import com.example.dto.RoleResponseDTO;
 import com.example.model.Role;
-import com.example.service.PermissionService;
-import com.example.service.RoleService;
-import com.example.service.UserService;
+import com.example.service.interf.IPermissionService;
+import com.example.service.interf.IRoleService;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/app/roles")
+@RequiredArgsConstructor
 public class RoleMVCController {
 
     private static final String ADMIN_ROLE = "ADMIN";
 
-    private final RoleService roleService;
-    private final PermissionService permissionService;
-
-    public RoleMVCController(RoleService roleService, PermissionService permissionService) {
-        this.roleService = roleService;
-        this.permissionService = permissionService;
-    }
+    private final IRoleService roleService;
+    private final IPermissionService permissionService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_READ')")
@@ -60,7 +59,8 @@ public class RoleMVCController {
         }
         String normalizedName = name.trim().toUpperCase().replace(' ', '_');
         try {
-            roleService.create(normalizedName, permissionIds == null ? null : new HashSet<>(permissionIds));
+            RoleRequestDTO roleRequestDTO = new RoleRequestDTO(normalizedName, permissionIds == null ? null : new HashSet<>(permissionIds));
+            roleService.create(roleRequestDTO);
             redirectAttributes.addFlashAttribute("success", "Rol " + normalizedName + " creado.");
             return "redirect:/app/roles";
         } catch (IllegalArgumentException e) {
@@ -76,8 +76,9 @@ public class RoleMVCController {
     @PreAuthorize("hasRole('ADMIN') and hasAuthority('ROLE_WRITE')")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            Role role = roleService.findById(id);
-            if (ADMIN_ROLE.equals(role.getName()) || UserService.DEFAULT_ROLE.equals(role.getName())) {
+            final String DEFAULT_ROLE = "USER";
+            RoleResponseDTO role = roleService.findById(id);
+            if (ADMIN_ROLE.equals(role.getName()) || DEFAULT_ROLE.equals(role.getName())) {
                 redirectAttributes.addFlashAttribute("error",
                         "El rol " + role.getName() + " es del sistema y no se puede eliminar.");
                 return "redirect:/app/roles";
@@ -94,7 +95,7 @@ public class RoleMVCController {
     @PreAuthorize("hasAuthority('ROLE_WRITE')")
     public String permissionsForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
-            Role role = roleService.findById(id);
+            Role role = roleService.findByIdDB(id);
             Set<Long> selectedIds = role.getRolePermissions().stream()
                     .map(rolePermission -> rolePermission.getPermission().getId())
                     .collect(Collectors.toSet());

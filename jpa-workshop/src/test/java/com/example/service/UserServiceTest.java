@@ -19,9 +19,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.dto.UserRequestDTO;
+import com.example.dto.UserResponseDTO;
+import com.example.mapper.IUserMapper;
 import com.example.model.Role;
 import com.example.model.User;
 import com.example.repository.UserRepository;
+import com.example.service.interf.IRoleService;
+import com.example.service.impl.UserService;
+import org.mapstruct.factory.Mappers;
+import org.mockito.Spy;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -30,7 +37,10 @@ public class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private RoleService roleService;
+    private IRoleService roleService;
+
+    @Spy
+    private IUserMapper userMapper = Mappers.getMapper(IUserMapper.class);
 
     @InjectMocks
     private UserService userService;
@@ -60,7 +70,7 @@ public class UserServiceTest {
         users.add(user);
         when(userRepository.findAll()).thenReturn(users);
 
-        List<User> result = userService.findAll();
+        List<UserResponseDTO> result = userService.findAll();
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -72,7 +82,7 @@ public class UserServiceTest {
     public void testFindById() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        User result = userService.findById(1L);
+        UserResponseDTO result = userService.findById(1L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -91,24 +101,25 @@ public class UserServiceTest {
 
     @Test
     public void testCreate() {
-        when(roleService.findById(1L)).thenReturn(role);
+        when(roleService.findByIdDB(1L)).thenReturn(role);
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        User result = userService.create("testuser", "testuser@example.com", "clave123", 1L);
+        UserRequestDTO userRequestDTO = new UserRequestDTO("testuser", "testuser@example.com", "clave123", 1L);
+        UserResponseDTO result = userService.create(userRequestDTO);
 
         assertNotNull(result);
         assertNotNull(result.getId());
         assertEquals("testuser", result.getName());
-        assertEquals(role, result.getRole());
-        verify(roleService, times(1)).findById(1L);
+        verify(roleService, times(1)).findByIdDB(1L);
         verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     public void testCreateWithoutRole() {
         // Un usuario no puede quedar sin rol
+        UserRequestDTO userRequestDTO = new UserRequestDTO("testuser", "testuser@example.com", "clave123", null);
         assertThrows(IllegalArgumentException.class,
-                () -> userService.create("testuser", "testuser@example.com", "clave123", null));
+                () -> userService.create(userRequestDTO));
         verify(userRepository, never()).save(any(User.class));
     }
 
@@ -117,23 +128,24 @@ public class UserServiceTest {
     @Test
     public void testUpdate() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(roleService.findById(1L)).thenReturn(role);
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(roleService.findByIdDB(1L)).thenReturn(role);
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User result = userService.update(1L, "editado", "editado@example.com", "otraclave", 1L);
+        UserRequestDTO userRequestDTO = new UserRequestDTO("editado", "editado@example.com", "otraclave", 1L);
+        UserResponseDTO result = userService.update(1L, userRequestDTO);
 
         assertEquals("editado", result.getName());
         assertEquals("editado@example.com", result.getEmail());
-        assertEquals("otraclave", result.getPassword());
-        verify(userRepository, times(1)).save(user);
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     public void testUpdateWithoutRole() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
+        UserRequestDTO userRequestDTO = new UserRequestDTO("editado", "editado@example.com", "otraclave", null);
         assertThrows(IllegalArgumentException.class,
-                () -> userService.update(1L, "editado", "editado@example.com", "otraclave", null));
+                () -> userService.update(1L, userRequestDTO));
         verify(userRepository, never()).save(any(User.class));
     }
 
