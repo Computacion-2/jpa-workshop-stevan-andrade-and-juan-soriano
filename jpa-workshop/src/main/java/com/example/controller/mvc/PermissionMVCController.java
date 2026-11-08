@@ -13,7 +13,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.dto.PermissionRequestDTO;
 import com.example.dto.PermissionResponseDTO;
-import com.example.model.Permission;
 import com.example.service.interf.IPermissionService;
 
 import lombok.RequiredArgsConstructor;
