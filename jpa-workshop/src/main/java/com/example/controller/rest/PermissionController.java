@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.model.Permission;
-import com.example.service.PermissionService;
+import com.example.dto.PermissionRequestDTO;
+import com.example.dto.PermissionResponseDTO;
+import com.example.service.interf.IPermissionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,32 +24,32 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor 
 public class PermissionController {
 
-    private final PermissionService permissionService;
+    private final IPermissionService permissionService;
 
-    // @GetMapping
-    // public List<PermissionResponse> findAll() {
-    //     return permissionService.findAll().stream().map(PermissionResponse::from).toList();
-    // }
+    @GetMapping
+    public List<PermissionResponseDTO> findAll() {
+        return permissionService.findAll();
+    }
 
-    // @GetMapping("/{id}")
-    // public PermissionResponse findById(@PathVariable Long id) {
-    //     return PermissionResponse.from(permissionService.findById(id));
-    // }
+    @GetMapping("/{id}")
+    public PermissionResponseDTO findById(@PathVariable Long id) {
+        return permissionService.findById(id);
+    }
 
-    // @PostMapping
-    // @ResponseStatus(HttpStatus.CREATED)
-    // public PermissionResponse create(@RequestBody PermissionRequest request) {
-    //     return PermissionResponse.from(permissionService.create(request.name(), request.description()));
-    // }
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public PermissionResponseDTO create(@RequestBody PermissionRequestDTO request) {
+        return permissionService.create(request);
+    }
 
-    // @PutMapping("/{id}")
-    // public PermissionResponse update(@PathVariable Long id, @RequestBody PermissionRequest request) {
-    //     return PermissionResponse.from(permissionService.update(id, request.name(), request.description()));
-    // }
+    @PutMapping("/{id}")
+    public PermissionResponseDTO update(@PathVariable Long id, @RequestBody PermissionRequestDTO request) {
+        return permissionService.update(id, request);
+    }
 
-    // @DeleteMapping("/{id}")
-    // @ResponseStatus(HttpStatus.NO_CONTENT)
-    // public void delete(@PathVariable Long id) {
-    //     permissionService.delete(id);
-    // }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        permissionService.delete(id);
+    }
 }

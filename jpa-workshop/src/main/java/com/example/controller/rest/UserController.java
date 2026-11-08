@@ -1,6 +1,5 @@
 package com.example.controller.rest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -14,8 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.model.User;
-import com.example.service.UserService;
+import com.example.dto.UserRequestDTO;
+import com.example.dto.UserResponseDTO;
+import com.example.service.interf.IUserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,34 +24,32 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor 
 public class UserController {
 
-    private final UserService userService;
+    private final IUserService userService;
 
-    // @GetMapping
-    // public List<UserResponse> findAll() {
-    //     return userService.findAll().stream().map(UserResponse::from).toList();
-    // }
+    @GetMapping
+    public List<UserResponseDTO> findAll() {
+        return userService.findAll();
+    }
 
-    // @GetMapping("/{id}")
-    // public UserResponse findById(@PathVariable Long id) {
-    //     return UserResponse.from(userService.findById(id));
-    // }
+    @GetMapping("/{id}")
+    public UserResponseDTO findById(@PathVariable Long id) {
+        return userService.findById(id);
+    }
 
-    // @PostMapping
-    // @ResponseStatus(HttpStatus.CREATED)
-    // public UserResponse create(@RequestBody UserRequest request) {
-    //     return UserResponse.from(userService.create(
-    //             request.name(), request.email(), request.password(), request.roleId()));
-    // }
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponseDTO create(@RequestBody UserRequestDTO request) {
+        return userService.create(request);
+    }
 
-    // @PutMapping("/{id}")
-    // public UserResponse update(@PathVariable Long id, @RequestBody UserRequest request) {
-    //     return UserResponse.from(userService.update(
-    //             id, request.name(), request.email(), request.password(), request.roleId()));
-    // }
+    @PutMapping("/{id}")
+    public UserResponseDTO update(@PathVariable Long id, @RequestBody UserRequestDTO request) {
+        return userService.update(id, request);
+    }
 
-    // @DeleteMapping("/{id}")
-    // @ResponseStatus(HttpStatus.NO_CONTENT)
-    // public void delete(@PathVariable Long id) {
-    //     userService.delete(id);
-    // }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        userService.delete(id);
+    }
 }

@@ -8,15 +8,18 @@ import com.example.dto.UserResponseDTO;
 import com.example.model.User;
 
 @Mapper(componentModel = "spring")
-public interface  UserMapper {
+public interface  IUserMapper {
     
     @Mapping(target = "id", ignore = true)
     //Could be just role. I used entity DB name row attribute
-    @Mapping(target = "role_id", ignore = true)
-    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "role", ignore = true)
     //Same situation as role_id
-    @Mapping(target = "created_at", ignore = true)
-    @Mapping(target = "updated_at", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "accounts", ignore = true)
+    @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "budgets", ignore = true)
+    @Mapping(target = "periodSummaries", ignore = true)
     User toEntity(UserRequestDTO userRequestDTO);
 
     @Mapping(target = "id", source = "id")

@@ -34,6 +34,7 @@ public class Role {
     @OneToMany(mappedBy = "role")
     private Set<User> users = new HashSet<>();
 
+    //I'm not sure about this Sori. please check
     public void addPermission(Permission permission) {
         RolePermission rolePermission = new RolePermission();
         rolePermission.setRole(this);

@@ -8,9 +8,10 @@ import com.example.dto.PermissionResponseDTO;
 import com.example.model.Permission;
 
 @Mapper(componentModel = "spring")
-public interface PermissionMapper {
+public interface IPermissionMapper {
     
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "rolePermissions", ignore = true)
     Permission toEntity(PermissionRequestDTO permissionRequestDTO);
 
     @Mapping(target = "id", source = "id")

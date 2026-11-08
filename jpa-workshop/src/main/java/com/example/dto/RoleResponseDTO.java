@@ -1,7 +1,5 @@
 package com.example.dto;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +9,7 @@ import lombok.Data;
 @Builder 
 public class RoleResponseDTO {
     
-    private String id;
+    private Long id;
     private String name;
 
 }
