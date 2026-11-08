@@ -11,21 +11,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.model.User;
-import com.example.service.RoleService;
-import com.example.service.UserService;
+import com.example.dto.UserResponseDTO;
+import com.example.service.interf.IRoleService;
+import com.example.service.interf.IUserService;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/app/users")
+@RequiredArgsConstructor 
 public class UserMVCController {
 
-    private final UserService userService;
-    private final RoleService roleService;
-
-    public UserMVCController(UserService userService, RoleService roleService) {
-        this.userService = userService;
-        this.roleService = roleService;
-    }
+    private final IUserService userService;
+    private final IRoleService roleService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('USER_READ')")
@@ -67,7 +65,8 @@ public class UserMVCController {
                              Authentication authentication,
                              RedirectAttributes redirectAttributes) {
         try {
-            User user = userService.findById(id);
+            String deafaultRole = "USER";
+            UserResponseDTO user = userService.findById(id);
             // no dejar que el usuario se quite su propio rol
             if (user.getEmail().equals(authentication.getName())) {
                 redirectAttributes.addFlashAttribute("error", "No puedes quitarte el rol a ti mismo.");
@@ -75,7 +74,7 @@ public class UserMVCController {
             }
             userService.removeRole(id);
             redirectAttributes.addFlashAttribute("success",
-                    "Rol quitado a " + user.getName() + ". Ahora tiene el rol " + UserService.DEFAULT_ROLE + ".");
+                    "Rol quitado a " + user.getName() + ". Ahora tiene el rol " + deafaultRole + ".");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }

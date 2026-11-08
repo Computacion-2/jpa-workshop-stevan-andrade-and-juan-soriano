@@ -11,18 +11,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.dto.PermissionRequestDTO;
+import com.example.dto.PermissionResponseDTO;
 import com.example.model.Permission;
-import com.example.service.PermissionService;
+import com.example.service.interf.IPermissionService;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/app/permissions")
+@RequiredArgsConstructor 
 public class PermissionMVCController {
 
-    private final PermissionService permissionService;
-
-    public PermissionMVCController(PermissionService permissionService) {
-        this.permissionService = permissionService;
-    }
+    private final IPermissionService permissionService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('PERMISSION_READ')")
@@ -41,8 +42,9 @@ public class PermissionMVCController {
             return "redirect:/app/permissions";
         }
         String normalizedName = name.trim().toUpperCase().replace(' ', '_');
+        PermissionRequestDTO permissionRequestDTO = new PermissionRequestDTO(normalizedName, description.trim());
         try {
-            permissionService.create(normalizedName, description == null ? null : description.trim());
+            permissionService.create(permissionRequestDTO);
             redirectAttributes.addFlashAttribute("success", "Permiso " + normalizedName + " creado.");
         } catch (DataAccessException e) {
             redirectAttributes.addFlashAttribute("error", "Ya existe un permiso llamado " + normalizedName + ".");
@@ -54,7 +56,7 @@ public class PermissionMVCController {
     @PreAuthorize("hasAuthority('PERMISSION_WRITE')")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            Permission permission = permissionService.findById(id);
+            PermissionResponseDTO permission = permissionService.findById(id);
             permissionService.delete(id);
             redirectAttributes.addFlashAttribute("success", "Permiso " + permission.getName() + " eliminado.");
         } catch (IllegalArgumentException e) {

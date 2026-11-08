@@ -7,22 +7,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.security.AppUserDetails;
-import com.example.service.PermissionService;
-import com.example.service.RoleService;
-import com.example.service.UserService;
+import com.example.service.interf.IPermissionService;
+import com.example.service.interf.IRoleService;
+import com.example.service.interf.IUserService;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
+@RequiredArgsConstructor 
 public class HomeMVCController {
 
-    private final UserService userService;
-    private final RoleService roleService;
-    private final PermissionService permissionService;
-
-    public HomeMVCController(UserService userService, RoleService roleService, PermissionService permissionService) {
-        this.userService = userService;
-        this.roleService = roleService;
-        this.permissionService = permissionService;
-    }
+    private final IUserService userService;
+    private final IRoleService roleService;
+    private final IPermissionService permissionService;
 
     @GetMapping("/")
     public String home(@AuthenticationPrincipal AppUserDetails currentUser, Model model) {

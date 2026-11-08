@@ -7,17 +7,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.service.AuthService;
+import com.example.dto.UserRequestDTO;
+import com.example.service.interf.IAuthService;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/mvc/auth")
+@RequiredArgsConstructor 
 public class AuthMVCController {
 
-    private final AuthService authService;
-
-    public AuthMVCController(AuthService authService) {
-        this.authService = authService;
-    }
+    private final IAuthService authService;
 
     @GetMapping("/login")
     public String login() {
@@ -35,8 +35,10 @@ public class AuthMVCController {
                            @RequestParam String password,
                            @RequestParam String confirmPassword,
                            RedirectAttributes redirectAttributes) {
+        
+        UserRequestDTO userRequestDTO = new UserRequestDTO(name, email, password, null);
         try {
-            authService.register(name, email, password, confirmPassword);
+            authService.register(userRequestDTO, confirmPassword);
             redirectAttributes.addFlashAttribute("success",
                     "Cuenta creada. Ya puedes iniciar sesión con " + email.trim() + ".");
             return "redirect:/mvc/auth/login";
