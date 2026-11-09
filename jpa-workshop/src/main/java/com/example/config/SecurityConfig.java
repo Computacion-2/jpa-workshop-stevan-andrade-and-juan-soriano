@@ -74,7 +74,10 @@ public class SecurityConfig {
                         "/mvc/auth/login",
                         "/mvc/auth/register",
                         "/error",
-                        "/css/**"
+                        "/css/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**"
                     ).permitAll()
                     .anyRequest().authenticated())
 
