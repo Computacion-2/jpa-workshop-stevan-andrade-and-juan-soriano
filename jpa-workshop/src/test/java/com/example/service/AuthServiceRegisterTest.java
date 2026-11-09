@@ -40,6 +40,10 @@ public class AuthServiceRegisterTest {
     @InjectMocks
     private AuthService authService;
 
+    private RoleResponseDTO userRole() {
+        return RoleResponseDTO.builder().id(2L).name("USER").build();
+    }
+
     private UserRequestDTO request(String password) {
         return new UserRequestDTO("Ana Gómez", "ana@finanzas.com", password, null);
     }
@@ -47,9 +51,9 @@ public class AuthServiceRegisterTest {
     @Test
     public void testRegisterAssignsDefaultRole() {
         when(userRepository.existsByEmail("ana@finanzas.com")).thenReturn(false);
-        when(roleService.findByName(UserService.DEFAULT_ROLE)).thenReturn(new RoleResponseDTO(2L, "USER"));
+        when(roleService.findByName(UserService.DEFAULT_ROLE)).thenReturn(userRole());
         when(userService.create(any(UserRequestDTO.class)))
-                .thenReturn(new UserResponseDTO(5L, "Ana Gómez", "ana@finanzas.com"));
+                .thenReturn(UserResponseDTO.builder().id(5L).name("Ana Gómez").email("ana@finanzas.com").build());
 
         UserResponseDTO result = authService.register(request("clave123"), "clave123");
 
@@ -62,7 +66,7 @@ public class AuthServiceRegisterTest {
     @Test
     public void testRegisterDoesNotHashTwice() {
         when(userRepository.existsByEmail("ana@finanzas.com")).thenReturn(false);
-        when(roleService.findByName(UserService.DEFAULT_ROLE)).thenReturn(new RoleResponseDTO(2L, "USER"));
+        when(roleService.findByName(UserService.DEFAULT_ROLE)).thenReturn(userRole());
 
         authService.register(request("clave123"), "clave123");
 
