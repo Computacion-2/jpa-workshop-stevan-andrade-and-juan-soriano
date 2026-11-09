@@ -132,6 +132,15 @@ Con la configuración de `application.properties` la aplicación queda en:
 | Swagger UI | http://localhost:8082/jpa-workshop/swagger-ui.html |
 | Consola de H2 | http://localhost:8082/jpa-workshop/h2-console |
 
+Para iniciar sesión en el módulo web, abre `http://localhost:8082/jpa-workshop/mvc/auth/login` y usa esta cuenta de prueba:
+
+| Correo | Contraseña | Rol |
+|---|---|---|
+| `admin@finanzas.com` | `admin123` | Administrador (`ADMIN`) |
+
+También puedes iniciar sesión como usuario normal con `ana@finanzas.com` y la contraseña `ana123`.
+Estas cuentas se crean automáticamente al arrancar la aplicación; no son las credenciales de la consola H2.
+
 Para desplegar en un Tomcat externo, ver la [sección 12](#12-despliegue-en-tomcat).
 
 ## 7. Consola web de H2
@@ -576,11 +585,11 @@ Spring Boot 4 usa Servlet 6.1, por lo que se necesita **Tomcat 11** y **Java 21*
 
 | Qué | URL |
 |---|---|
-| Módulo web | `http://<servidor>:8080/jpa-workshop` |
-| Swagger UI | `http://<servidor>:8080/jpa-workshop/swagger-ui.html` |
-| API REST | `http://<servidor>:8080/jpa-workshop/api` |
+| Módulo web | `http://localhost:8080/jpa-workshop` |
+| Swagger UI | `http://localhost:8080/jpa-workshop/swagger-ui.html` |
+| API REST | `http://localhost:8080/jpa-workshop/api` |
 
-Para probar el despliegue con Postman, cambiar `base_url` del entorno a `http://<servidor>:8080/jpa-workshop`
+Para probar el despliegue con Postman, cambiar `base_url` del entorno a `http://localhost:8080/jpa-workshop`
 y ejecutar la colección completa.
 
 ## 13. Autores
