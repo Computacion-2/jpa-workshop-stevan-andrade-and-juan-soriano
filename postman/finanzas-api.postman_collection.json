@@ -696,6 +696,624 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "03 - Permissions",
+      "description": "CRUD de permisos con el token del administrador. El permiso creado se elimina al final.",
+      "item": [
+        {
+          "name": "Crear permiso",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set(\"new_permission_name\", \"POSTMAN_\" + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Devuelve el permiso creado\", function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.be.a(\"number\");",
+                  "    pm.expect(body.name).to.eql(pm.environment.get(\"new_permission_name\"));",
+                  "    pm.environment.set(\"created_permission_id\", body.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "permissions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{new_permission_name}}\",\n  \"description\": \"Permiso creado desde Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener permiso por id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Es el permiso creado\", function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.eql(Number(pm.environment.get(\"created_permission_id\")));",
+                  "    pm.expect(body.description).to.eql(\"Permiso creado desde Postman\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/permissions/{{created_permission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "permissions",
+                "{{created_permission_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar permisos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"La lista incluye los permisos base y el creado\", function () {",
+                  "    const names = pm.response.json().map(function (p) { return p.name; });",
+                  "    pm.expect(names).to.include(\"USER_READ\");",
+                  "    pm.expect(names).to.include(pm.environment.get(\"new_permission_name\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "permissions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar permiso",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Cambia la descripcion\", function () {",
+                  "    pm.expect(pm.response.json().description).to.eql(\"Descripcion actualizada desde Postman\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/permissions/{{created_permission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "permissions",
+                "{{created_permission_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{new_permission_name}}\",\n  \"description\": \"Descripcion actualizada desde Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar permiso",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/permissions/{{created_permission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "permissions",
+                "{{created_permission_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirmar que el permiso ya no existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/permissions/{{created_permission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "permissions",
+                "{{created_permission_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 - Roles",
+      "description": "CRUD de roles y asignacion de permisos con el token del administrador. El rol creado se elimina al final.",
+      "item": [
+        {
+          "name": "Buscar permisos base",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Existen TRANSACTION_READ y TRANSACTION_WRITE\", function () {",
+                  "    const permissions = pm.response.json();",
+                  "    const read = permissions.find(function (p) { return p.name === \"TRANSACTION_READ\"; });",
+                  "    const write = permissions.find(function (p) { return p.name === \"TRANSACTION_WRITE\"; });",
+                  "    pm.expect(read).to.not.be.undefined;",
+                  "    pm.expect(write).to.not.be.undefined;",
+                  "    pm.environment.set(\"transaction_read_id\", read.id);",
+                  "    pm.environment.set(\"transaction_write_id\", write.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "permissions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear rol",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set(\"new_role_name\", \"POSTMAN_ROLE_\" + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Devuelve el rol creado\", function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.be.a(\"number\");",
+                  "    pm.expect(body.name).to.eql(pm.environment.get(\"new_role_name\"));",
+                  "    pm.environment.set(\"created_role_id\", body.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "roles"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{new_role_name}}\",\n  \"permissionIds\": [{{transaction_read_id}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener rol por id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Es el rol creado\", function () {",
+                  "    pm.expect(pm.response.json().id).to.eql(Number(pm.environment.get(\"created_role_id\")));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/roles/{{created_role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "{{created_role_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"La lista incluye ADMIN, USER y el rol creado\", function () {",
+                  "    const names = pm.response.json().map(function (r) { return r.name; });",
+                  "    pm.expect(names).to.include.members([\"ADMIN\", \"USER\", pm.environment.get(\"new_role_name\")]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "roles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agregar permiso al rol",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/roles/{{created_role_id}}/permissions/{{transaction_write_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "{{created_role_id}}",
+                "permissions",
+                "{{transaction_write_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Quitar permiso del rol",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/roles/{{created_role_id}}/permissions/{{transaction_write_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "{{created_role_id}}",
+                "permissions",
+                "{{transaction_write_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar rol",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Cambia el nombre\", function () {",
+                  "    pm.expect(pm.response.json().name).to.eql(pm.environment.get(\"new_role_name\") + \"_EDIT\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/roles/{{created_role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "{{created_role_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{new_role_name}}_EDIT\",\n  \"permissionIds\": [{{transaction_read_id}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar rol",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/roles/{{created_role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "{{created_role_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirmar que el rol ya no existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/roles/{{created_role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "{{created_role_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }
