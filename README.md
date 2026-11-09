@@ -14,7 +14,7 @@ La idea es registrar ingresos y gastos de cada usuario y guardar resúmenes mens
 
 Haz clic en la imagen para ver el video de demostración del Taller 3:
 
-[![Video de demostración](https://img.youtube.com/vi/3fSzft0fw3o/0.jpg)](https://youtu.be/3fSzft0fw3o)
+[![Video de demostración](https://img.youtube.com/vi/3fSzft0fw3o/0.jpg)](https://drive.google.com/file/d/19Xq6F41Nd3ZyecbN3g4lzHVexlmCxMNG/view?usp=sharing)
 
 ## 1. Tecnologías y versiones
 
