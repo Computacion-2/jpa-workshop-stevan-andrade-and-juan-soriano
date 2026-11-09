@@ -19,6 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.exception.ResourceNotFoundException;
 import com.example.dto.UserRequestDTO;
 import com.example.dto.UserResponseDTO;
 import com.example.mapper.IUserMapper;
@@ -28,7 +29,9 @@ import com.example.repository.UserRepository;
 import com.example.service.interf.IRoleService;
 import com.example.service.impl.UserService;
 import org.mapstruct.factory.Mappers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Spy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -38,6 +41,9 @@ public class UserServiceTest {
 
     @Mock
     private IRoleService roleService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Spy
     private IUserMapper userMapper = Mappers.getMapper(IUserMapper.class);
@@ -166,5 +172,133 @@ public class UserServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> userService.delete(99L));
         verify(userRepository, never()).delete(any(User.class));
+    }
+
+    @Test
+    public void testCreateHashesPassword() {
+        when(roleService.findByIdDB(1L)).thenReturn(role);
+        when(passwordEncoder.encode("clave123")).thenReturn("$2a$10$hash");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        userService.create(new UserRequestDTO("testuser", "testuser@example.com", "clave123", 1L));
+
+        ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(saved.capture());
+        assertEquals("$2a$10$hash", saved.getValue().getPassword());
+        verify(passwordEncoder, times(1)).encode("clave123");
+    }
+
+    @Test
+    public void testCreateWithoutPassword() {
+        UserRequestDTO userRequestDTO = new UserRequestDTO("testuser", "testuser@example.com", " ", 1L);
+
+        assertThrows(IllegalArgumentException.class, () -> userService.create(userRequestDTO));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    public void testCreateDuplicateEmail() {
+        when(userRepository.existsByEmail("testuser@example.com")).thenReturn(true);
+
+        UserRequestDTO userRequestDTO = new UserRequestDTO("testuser", "testuser@example.com", "clave123", 1L);
+
+        assertThrows(IllegalArgumentException.class, () -> userService.create(userRequestDTO));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    public void testUpdateKeepsIdAndHashesPassword() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleService.findByIdDB(1L)).thenReturn(role);
+        when(passwordEncoder.encode("otraclave")).thenReturn("$2a$10$otrohash");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        userService.update(1L, new UserRequestDTO("editado", "editado@example.com", "otraclave", 1L));
+
+        ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(saved.capture());
+        assertEquals(1L, saved.getValue().getId());
+        assertEquals("$2a$10$otrohash", saved.getValue().getPassword());
+    }
+
+    @Test
+    public void testUpdateWithoutPasswordKeepsCurrent() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleService.findByIdDB(1L)).thenReturn(role);
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        userService.update(1L, new UserRequestDTO("editado", "testuser@example.com", null, 1L));
+
+        ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(saved.capture());
+        assertEquals("clave123", saved.getValue().getPassword());
+        verify(passwordEncoder, never()).encode(any());
+    }
+
+    @Test
+    public void testUpdateDuplicateEmail() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleService.findByIdDB(1L)).thenReturn(role);
+        when(userRepository.existsByEmailAndIdNot("ocupado@example.com", 1L)).thenReturn(true);
+
+        UserRequestDTO userRequestDTO = new UserRequestDTO("editado", "ocupado@example.com", null, 1L);
+
+        assertThrows(IllegalArgumentException.class, () -> userService.update(1L, userRequestDTO));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    public void testChangeRole() {
+        Role userRole = new Role();
+        userRole.setId(2L);
+        userRole.setName("USER");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleService.findByIdDB(2L)).thenReturn(userRole);
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        userService.changeRole(1L, 2L);
+
+        assertEquals(2L, user.getRole().getId());
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    public void testChangeRoleUserNotFound() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> userService.changeRole(99L, 2L));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    public void testRemoveRole() {
+        Role defaultRole = new Role();
+        defaultRole.setId(2L);
+        defaultRole.setName(UserService.DEFAULT_ROLE);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleService.findByNameDB(UserService.DEFAULT_ROLE)).thenReturn(defaultRole);
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        userService.removeRole(1L);
+
+        assertEquals(UserService.DEFAULT_ROLE, user.getRole().getName());
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    public void testRemoveRoleAlreadyDefault() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleService.findByNameDB(UserService.DEFAULT_ROLE)).thenReturn(role);
+
+        assertThrows(IllegalArgumentException.class, () -> userService.removeRole(1L));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    public void testFindByIdNotFoundIsResourceNotFound() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> userService.findById(99L));
+        assertEquals("Usuario no encontrado con id 99", ex.getMessage());
     }
 }

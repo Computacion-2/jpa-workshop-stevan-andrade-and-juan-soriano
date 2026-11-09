@@ -1,5 +1,6 @@
 package com.example.service.impl;
 
+import com.example.exception.ResourceNotFoundException;
 import com.example.dto.PermissionRequestDTO;
 import com.example.dto.PermissionResponseDTO;
 import com.example.mapper.IPermissionMapper;
@@ -43,7 +44,7 @@ public class PermissionService implements IPermissionService {
         
         Optional<Permission> permissionSearch = permissionRepository.findById(id);
 
-        Permission permission = permissionSearch.orElseThrow(() -> new IllegalArgumentException());
+        Permission permission = permissionSearch.orElseThrow(() -> new ResourceNotFoundException("Permiso no encontrado con id " + id));
 
         return permissionMapper.toResponse(permission);
 
@@ -55,7 +56,7 @@ public class PermissionService implements IPermissionService {
         if (id < 0) throw new IllegalArgumentException();
 
         Optional<Permission> permissionSearch = permissionRepository.findById(id);
-        return permissionSearch.orElseThrow(() -> new IllegalArgumentException());
+        return permissionSearch.orElseThrow(() -> new ResourceNotFoundException("Permiso no encontrado con id " + id));
     }
 
     @Override

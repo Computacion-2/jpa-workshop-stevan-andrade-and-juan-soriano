@@ -1,5 +1,6 @@
 package com.example.service.impl;
 
+import com.example.exception.ResourceNotFoundException;
 import com.example.dto.RoleRequestDTO;
 import com.example.dto.RoleResponseDTO;
 import com.example.mapper.IRoleMapper;
@@ -48,7 +49,7 @@ public class RoleService implements IRoleService {
         Optional<Role> role = roleRepository.findById(id);
 
         return roleMapper.toResponse(role
-            .orElseThrow(() -> new IllegalArgumentException()));
+            .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id " + id)));
 
     }
 
@@ -58,7 +59,7 @@ public class RoleService implements IRoleService {
         if (id < 0) throw new IllegalArgumentException();
         Optional<Role> role = roleRepository.findById(id);
 
-        return role.orElseThrow(() -> new IllegalArgumentException());
+        return role.orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id " + id));
 
     }
 
@@ -69,7 +70,7 @@ public class RoleService implements IRoleService {
         Optional<Role> role = roleRepository.findByName(name);
 
         return roleMapper.toResponse(role
-            .orElseThrow(() -> new IllegalArgumentException()));
+            .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado: " + name)));
 
     }
 
@@ -79,7 +80,7 @@ public class RoleService implements IRoleService {
         if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException();
         Optional<Role> role = roleRepository.findByName(name);
 
-        return role.orElseThrow(() -> new IllegalArgumentException());
+        return role.orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado: " + name));
 
     }
 
@@ -104,12 +105,29 @@ public class RoleService implements IRoleService {
     @Override 
     public RoleResponseDTO update(Long id, RoleRequestDTO roleRequestDTO) {
 
+        if (roleRequestDTO == null) throw new IllegalArgumentException();
+
         //Checks role with that ID exist, if didn't found anything throws an exception
-        findByIdDB(id);
-        Role role = roleMapper.toEntity(roleRequestDTO);
-        role.setId(id);
+        Role role = findByIdDB(id);
+        role.setName(roleRequestDTO.getName());
+
+        Set<Long> permissionIds = roleRequestDTO.getPermissionIds();
+        if (permissionIds != null && !permissionIds.isEmpty())
+            replacePermissions(role, permissionIds);
 
         return roleMapper.toResponse(roleRepository.save(role));
+    }
+
+    private void replacePermissions(Role role, Set<Long> permissionIds) {
+
+        role.getRolePermissions().removeIf(rp -> !permissionIds.contains(rp.getPermission().getId()));
+        Set<Long> currentIds = role.getRolePermissions().stream()
+                .map(rp -> rp.getPermission().getId())
+                .collect(Collectors.toSet());
+        for (Long permissionId : permissionIds)
+            if (!currentIds.contains(permissionId))
+                role.addPermission(permissionService.findByIdDB(permissionId));
+
     }
 
     @Override 
