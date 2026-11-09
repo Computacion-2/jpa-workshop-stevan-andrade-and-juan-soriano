@@ -224,6 +224,40 @@ public class RoleServiceTest {
     }
 
     @Test
+    public void testUpdateKeepsPermissionsWhenNoneAreSent() {
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        roleService.update(1L, new RoleRequestDTO("SUPERADMIN", null));
+
+        assertEquals("SUPERADMIN", role.getName());
+        assertEquals(1, role.getRolePermissions().size());
+        assertEquals(1L, role.getRolePermissions().iterator().next().getPermission().getId());
+        verify(roleRepository, times(1)).save(role);
+    }
+
+    @Test
+    public void testUpdateReplacesPermissions() {
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(permissionService.findByIdDB(2L)).thenReturn(permission2);
+        when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        roleService.update(1L, new RoleRequestDTO("ADMIN", Set.of(2L)));
+
+        assertEquals(1, role.getRolePermissions().size());
+        assertEquals(2L, role.getRolePermissions().iterator().next().getPermission().getId());
+    }
+
+    @Test
+    public void testUpdateNotFound() {
+        when(roleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> roleService.update(99L, new RoleRequestDTO("X", null)));
+        verify(roleRepository, never()).save(any(Role.class));
+    }
+
+    @Test
     public void testFindByName() {
         when(roleRepository.findByName("ADMIN")).thenReturn(Optional.of(role));
 
