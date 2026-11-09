@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,6 +26,7 @@ public class UserService implements IUserService{
     private final UserRepository userRepository;
     private final IRoleService roleService;
     private final IUserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override 
     public List<UserResponseDTO> findAll() {
@@ -62,24 +64,37 @@ public class UserService implements IUserService{
     @Override 
     public UserResponseDTO create(UserRequestDTO userRequestDTO) {
 
-        if (userRequestDTO == null) throw new IllegalArgumentException(); 
+        if (userRequestDTO == null) throw new IllegalArgumentException();
+        if (isBlank(userRequestDTO.getPassword()))
+            throw new IllegalArgumentException("La contraseña es obligatoria");
+        if (userRepository.existsByEmail(userRequestDTO.getEmail()))
+            throw new IllegalArgumentException("Ya existe una cuenta con el correo " + userRequestDTO.getEmail());
 
         User user = userMapper.toEntity(userRequestDTO);
         Role roleUser = getRole(userRequestDTO.getRoleId());
         user.setRole(roleUser);
+        user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
         return userMapper.toResponse(userRepository.save(user));
 
     }
 
-    @Override 
+    @Override
     public UserResponseDTO update(Long id, UserRequestDTO userRequestDTO) {
 
         if (userRequestDTO == null) throw new IllegalArgumentException();
 
-        findByIdDB(id);
-        User user = userMapper.toEntity(userRequestDTO);
+        User user = findByIdDB(id);
         Role role = getRole(userRequestDTO.getRoleId());
+
+        String newEmail = userRequestDTO.getEmail();
+        if (userRepository.existsByEmailAndIdNot(newEmail, id))
+            throw new IllegalArgumentException("Ya existe una cuenta con el correo " + newEmail);
+
+        user.setName(userRequestDTO.getName());
+        user.setEmail(newEmail);
         user.setRole(role);
+        if (!isBlank(userRequestDTO.getPassword()))
+            user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
 
         return userMapper.toResponse(userRepository.save(user));
 
@@ -126,6 +141,12 @@ public class UserService implements IUserService{
             throw new IllegalArgumentException("El usuario debe tener un rol");
         
         return roleService.findByIdDB(roleId);
+
+    }
+
+    private boolean isBlank(String value) {
+
+        return value == null || value.trim().isEmpty();
 
     }
 }

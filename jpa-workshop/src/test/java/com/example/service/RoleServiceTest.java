@@ -221,4 +221,62 @@ public class RoleServiceTest {
         assertThrows(IllegalArgumentException.class, () -> roleService.delete(1L));
         verify(roleRepository, never()).delete(any(Role.class));
     }
+
+    @Test
+    public void testFindByName() {
+        when(roleRepository.findByName("ADMIN")).thenReturn(Optional.of(role));
+
+        RoleResponseDTO result = roleService.findByName("ADMIN");
+
+        assertEquals(1L, result.getId());
+        assertEquals("ADMIN", result.getName());
+        verify(roleRepository, times(1)).findByName("ADMIN");
+    }
+
+    @Test
+    public void testFindByNameNotFound() {
+        when(roleRepository.findByName("NO_EXISTE")).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> roleService.findByName("NO_EXISTE"));
+    }
+
+    @Test
+    public void testFindByNameBlank() {
+        assertThrows(IllegalArgumentException.class, () -> roleService.findByName(" "));
+        assertThrows(IllegalArgumentException.class, () -> roleService.findByName(null));
+        verify(roleRepository, never()).findByName(any());
+    }
+
+    @Test
+    public void testSetPermissionsReplacesPermissions() {
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(permissionService.findByIdDB(2L)).thenReturn(permission2);
+        when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        roleService.setPermissions(1L, Set.of(2L));
+
+        assertEquals(1, role.getRolePermissions().size());
+        assertEquals(2L, role.getRolePermissions().iterator().next().getPermission().getId());
+        verify(roleRepository, times(1)).save(role);
+    }
+
+    @Test
+    public void testSetPermissionsKeepsExisting() {
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(permissionService.findByIdDB(2L)).thenReturn(permission2);
+        when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        roleService.setPermissions(1L, Set.of(1L, 2L));
+
+        assertEquals(2, role.getRolePermissions().size());
+        verify(permissionService, never()).findByIdDB(1L);
+        verify(permissionService, times(1)).findByIdDB(2L);
+    }
+
+    @Test
+    public void testSetPermissionsEmpty() {
+        assertThrows(IllegalArgumentException.class, () -> roleService.setPermissions(1L, new HashSet<>()));
+        assertThrows(IllegalArgumentException.class, () -> roleService.setPermissions(1L, null));
+        verify(roleRepository, never()).save(any(Role.class));
+    }
 }
