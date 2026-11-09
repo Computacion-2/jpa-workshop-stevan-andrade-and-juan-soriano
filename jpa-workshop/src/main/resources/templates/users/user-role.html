@@ -33,10 +33,10 @@
 
                 <div class="badge-list mt-3">
                     <span class="badge-app badge-permission"
-                          th:each="rolePermission : ${user.role.rolePermissions}"
-                          th:text="${rolePermission.permission.name}">USER_READ</span>
+                          th:each="permission : ${user.role.permissions}"
+                          th:text="${permission.name}">USER_READ</span>
                     <span class="badge-app badge-muted"
-                          th:if="${user.role.rolePermissions.isEmpty()}">El rol no tiene permisos</span>
+                          th:if="${user.role.permissions.isEmpty()}">El rol no tiene permisos</span>
                 </div>
 
                 <form class="mt-4"

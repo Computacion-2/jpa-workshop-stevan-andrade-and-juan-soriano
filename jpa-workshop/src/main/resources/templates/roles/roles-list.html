@@ -64,13 +64,13 @@
                             <td>
                                 <div class="badge-list">
                                     <span class="badge-app badge-permission"
-                                          th:each="rolePermission : ${role.rolePermissions}"
-                                          th:text="${rolePermission.permission.name}">USER_READ</span>
+                                          th:each="permission : ${role.permissions}"
+                                          th:text="${permission.name}">USER_READ</span>
                                     <span class="badge-app badge-muted"
-                                          th:if="${role.rolePermissions.isEmpty()}">Sin permisos</span>
+                                          th:if="${role.permissions.isEmpty()}">Sin permisos</span>
                                 </div>
                             </td>
-                            <td class="id-cell" th:text="${role.users.size()}">0</td>
+                            <td class="id-cell" th:text="${role.userCount}">0</td>
                             <td th:if="${authorities.contains('ROLE_WRITE')}">
                                 <div class="actions-cell">
                                     <a class="btn-app btn-app-secondary btn-app-sm"
