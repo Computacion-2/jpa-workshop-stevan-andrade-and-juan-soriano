@@ -19,6 +19,8 @@ import com.example.service.interf.IUserService;
 
 import lombok.RequiredArgsConstructor;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor 
@@ -38,12 +40,12 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponseDTO create(@RequestBody UserRequestDTO request) {
+    public UserResponseDTO create(@Valid @RequestBody UserRequestDTO request) {
         return userService.create(request);
     }
 
     @PutMapping("/{id}")
-    public UserResponseDTO update(@PathVariable Long id, @RequestBody UserRequestDTO request) {
+    public UserResponseDTO update(@PathVariable Long id, @Valid @RequestBody UserRequestDTO request) {
         return userService.update(id, request);
     }
 

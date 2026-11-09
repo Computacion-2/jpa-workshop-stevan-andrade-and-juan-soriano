@@ -1,5 +1,6 @@
 package com.example.service.impl;
 
+import com.example.exception.ResourceNotFoundException;
 import com.example.dto.RoleRequestDTO;
 import com.example.dto.RoleResponseDTO;
 import com.example.mapper.IRoleMapper;
@@ -48,7 +49,7 @@ public class RoleService implements IRoleService {
         Optional<Role> role = roleRepository.findById(id);
 
         return roleMapper.toResponse(role
-            .orElseThrow(() -> new IllegalArgumentException()));
+            .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id " + id)));
 
     }
 
@@ -58,7 +59,7 @@ public class RoleService implements IRoleService {
         if (id < 0) throw new IllegalArgumentException();
         Optional<Role> role = roleRepository.findById(id);
 
-        return role.orElseThrow(() -> new IllegalArgumentException());
+        return role.orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con id " + id));
 
     }
 
@@ -69,7 +70,7 @@ public class RoleService implements IRoleService {
         Optional<Role> role = roleRepository.findByName(name);
 
         return roleMapper.toResponse(role
-            .orElseThrow(() -> new IllegalArgumentException()));
+            .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado: " + name)));
 
     }
 
@@ -79,7 +80,7 @@ public class RoleService implements IRoleService {
         if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException();
         Optional<Role> role = roleRepository.findByName(name);
 
-        return role.orElseThrow(() -> new IllegalArgumentException());
+        return role.orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado: " + name));
 
     }
 

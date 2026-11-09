@@ -16,6 +16,8 @@ import com.example.service.interf.IAuthService;
 
 import lombok.RequiredArgsConstructor;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -24,13 +26,13 @@ public class AuthController {
     private final IAuthService authService;
 
     @PostMapping("/login")
-    public TokenResponseDTO login(@RequestBody LoginRequestDTO request) {
+    public TokenResponseDTO login(@Valid @RequestBody LoginRequestDTO request) {
         return authService.login(request);
     }
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponseDTO register(@RequestBody RegisterRequestDTO request) {
+    public UserResponseDTO register(@Valid @RequestBody RegisterRequestDTO request) {
         UserRequestDTO userRequestDTO = UserRequestDTO.builder()
                 .name(request.getName())
                 .email(request.getEmail())

@@ -19,6 +19,8 @@ import com.example.service.interf.IPermissionService;
 
 import lombok.RequiredArgsConstructor;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/permissions")
 @RequiredArgsConstructor 
@@ -38,12 +40,12 @@ public class PermissionController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public PermissionResponseDTO create(@RequestBody PermissionRequestDTO request) {
+    public PermissionResponseDTO create(@Valid @RequestBody PermissionRequestDTO request) {
         return permissionService.create(request);
     }
 
     @PutMapping("/{id}")
-    public PermissionResponseDTO update(@PathVariable Long id, @RequestBody PermissionRequestDTO request) {
+    public PermissionResponseDTO update(@PathVariable Long id, @Valid @RequestBody PermissionRequestDTO request) {
         return permissionService.update(id, request);
     }
 

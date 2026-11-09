@@ -19,6 +19,8 @@ import com.example.service.interf.IRoleService;
 
 import lombok.RequiredArgsConstructor;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/roles")
 @RequiredArgsConstructor 
@@ -38,12 +40,12 @@ public class RoleController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public RoleResponseDTO create(@RequestBody RoleRequestDTO request) {
+    public RoleResponseDTO create(@Valid @RequestBody RoleRequestDTO request) {
         return roleService.create(request);
     }
 
     @PutMapping("/{id}")
-    public RoleResponseDTO update(@PathVariable Long id, @RequestBody RoleRequestDTO request) {
+    public RoleResponseDTO update(@PathVariable Long id, @Valid @RequestBody RoleRequestDTO request) {
         return roleService.update(id, request);
     }
 

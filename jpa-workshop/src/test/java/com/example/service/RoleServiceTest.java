@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.example.exception.ResourceNotFoundException;
 import com.example.dto.RoleRequestDTO;
 import com.example.dto.RoleResponseDTO;
 import com.example.mapper.IRoleMapper;
@@ -278,5 +279,21 @@ public class RoleServiceTest {
         assertThrows(IllegalArgumentException.class, () -> roleService.setPermissions(1L, new HashSet<>()));
         assertThrows(IllegalArgumentException.class, () -> roleService.setPermissions(1L, null));
         verify(roleRepository, never()).save(any(Role.class));
+    }
+
+    @Test
+    public void testFindByIdNotFoundIsResourceNotFound() {
+        when(roleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> roleService.findById(99L));
+        assertEquals("Rol no encontrado con id 99", ex.getMessage());
+    }
+
+    @Test
+    public void testFindByNameNotFoundIsResourceNotFound() {
+        when(roleRepository.findByName("NO_EXISTE")).thenReturn(Optional.empty());
+
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> roleService.findByName("NO_EXISTE"));
+        assertEquals("Rol no encontrado: NO_EXISTE", ex.getMessage());
     }
 }
