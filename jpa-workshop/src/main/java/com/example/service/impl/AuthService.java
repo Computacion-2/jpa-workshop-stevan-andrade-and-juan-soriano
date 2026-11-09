@@ -78,8 +78,6 @@ public class AuthService implements IAuthService {
 
         RoleResponseDTO defaultRole = roleService.findByName(UserService.DEFAULT_ROLE);
         userRequestDTO.setRoleId(defaultRole.getId());
-        // la contraseña se guarda cifrada, nunca en texto plano
-        userRequestDTO.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
         return userService.create(userRequestDTO);
     }
 

@@ -96,9 +96,9 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                     .accessDeniedPage("/access-denied"))
 
-                // la API REST del taller 2 y la consola de H2 no usan formularios de Thymeleaf
+                // la consola de H2 no usa formularios de Thymeleaf
                 .csrf(csrf -> csrf
-                    .ignoringRequestMatchers("/api/**", "/h2-console/**"))
+                    .ignoringRequestMatchers("/h2-console/**"))
                 .headers(headers -> headers
                     .frameOptions(frame -> frame.sameOrigin()))
 
