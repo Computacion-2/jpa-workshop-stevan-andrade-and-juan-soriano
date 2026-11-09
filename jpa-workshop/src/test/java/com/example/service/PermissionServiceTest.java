@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.example.exception.ResourceNotFoundException;
 import com.example.dto.PermissionRequestDTO;
 import com.example.dto.PermissionResponseDTO;
 import com.example.mapper.IPermissionMapper;
@@ -130,5 +131,13 @@ public class PermissionServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> permissionService.delete(1L));
         verify(permissionRepository, never()).delete(any(Permission.class));
+    }
+
+    @Test
+    public void testFindByIdNotFoundIsResourceNotFound() {
+        when(permissionRepository.findById(99L)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> permissionService.findById(99L));
+        assertEquals("Permiso no encontrado con id 99", ex.getMessage());
     }
 }

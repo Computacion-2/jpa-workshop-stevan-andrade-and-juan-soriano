@@ -19,6 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.exception.ResourceNotFoundException;
 import com.example.dto.UserRequestDTO;
 import com.example.dto.UserResponseDTO;
 import com.example.mapper.IUserMapper;
@@ -291,5 +292,13 @@ public class UserServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> userService.removeRole(1L));
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    public void testFindByIdNotFoundIsResourceNotFound() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> userService.findById(99L));
+        assertEquals("Usuario no encontrado con id 99", ex.getMessage());
     }
 }

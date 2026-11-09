@@ -1,5 +1,6 @@
 package com.example.service.impl;
 
+import com.example.exception.ResourceNotFoundException;
 import com.example.dto.UserRequestDTO;
 import com.example.dto.UserResponseDTO;
 import com.example.mapper.IUserMapper;
@@ -48,7 +49,7 @@ public class UserService implements IUserService{
         Optional<User> user = userRepository.findById(id);
 
         return userMapper.toResponse(user
-            .orElseThrow(() -> new IllegalArgumentException()));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id " + id)));
 
     }
 
@@ -57,7 +58,7 @@ public class UserService implements IUserService{
         if (id < 0) throw new IllegalArgumentException();
         Optional<User> user = userRepository.findById(id);
 
-        return user.orElseThrow(() -> new IllegalArgumentException());
+        return user.orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id " + id));
 
     }
 
